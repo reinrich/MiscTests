@@ -9,6 +9,8 @@ import jdk.internal.org.objectweb.asm.MethodVisitor;
 import jdk.internal.org.objectweb.asm.Type;
 import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter;
 import jdk.internal.org.objectweb.asm.commons.Method;
+import testlib.TestBase;
+
 import static jdk.internal.org.objectweb.asm.Opcodes.*;
 
 import java.lang.invoke.CallSite;
@@ -21,7 +23,7 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.reflect.Constructor;
 
 @SuppressWarnings({ "javadoc", "restriction" })
-public class TestIndyCallSiteDependencyCleaning {
+public class TestIndyCallSiteDependencyCleaning extends TestBase {
 
     public String pkgName;
     public String indyClassNameWithoutPkg;
@@ -42,7 +44,7 @@ public class TestIndyCallSiteDependencyCleaning {
     public Runnable indyRnbl;
 
     public int counter; // dummy
-    
+
     public static void main(String[] args) {
         new TestIndyCallSiteDependencyCleaning().runTest();
     }
@@ -77,19 +79,30 @@ public class TestIndyCallSiteDependencyCleaning {
             // This makes the indy CallSite instance phantom reachable. GC will enqueue the CallSiteContext cleaner,
             // which is derived from j.l.r.PhantomReference.
             //
-            // sapjvm_8: GC does *not* auto-clear PhantomReferences 
+            // sapjvm_8: GC does *not* auto-clear PhantomReferences
             //   -> the class loader and MutableCallSite stay alive
             //   -> the nmethod has no dead reference and therefore is not unloaded
-            //   
-            // sapjvm_9: GC *does* auto-clear PhantomReferences 
+            //
+            // sapjvm_9: GC *does* auto-clear PhantomReferences
             //   -> classloader and MutableCallSite remain dead
             //   -> the nmethod is unloaded and its dependencies are flushed
-            //   
+            //
             indyRnbl = null;
             indyClass = null;
             // w/o the phantom reference the nmethod would be made unloaded to get rid of the simpleLoader
             phantomSimpleLoader = new PhantomReference<>(simpleLoader, new ReferenceQueue<>());
             simpleLoader = null;
+
+            System.err.println("Wait for CompileTask");
+            waitForEnter();
+            System.gc();
+            System.gc();
+            System.gc();
+            System.err.println("Wait for the JIT");
+            waitForEnter();
+
+
+
             System.err.println("Calling System.gc()");
             System.gc();
             System.err.println("Wait for the call site context cleaner to be called by the reference handler thread");
@@ -169,7 +182,7 @@ public class TestIndyCallSiteDependencyCleaning {
     /**
      * Invokes the run method of the {@link TestIndyCallSiteDependencyCleaning#indyRnbl} many times
      * to get it jit compiled.
-     * 
+     *
      * @throws Exception
      */
     public void getIndyMethodJitCompiled() throws Exception {
@@ -179,8 +192,6 @@ public class TestIndyCallSiteDependencyCleaning {
         while (iter-- > 0) {
             indyRnbl.run();
         }
-        System.err.println("Wait for the JIT");
-        Thread.sleep(500);
     }
 
     public static CallSite bootstrap(MethodHandles.Lookup caller, String name, MethodType type) throws NoSuchMethodException, IllegalAccessException {
