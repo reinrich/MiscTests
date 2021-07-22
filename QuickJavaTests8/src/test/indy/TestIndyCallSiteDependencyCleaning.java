@@ -25,6 +25,8 @@ import java.lang.reflect.Constructor;
 @SuppressWarnings({ "javadoc", "restriction" })
 public class TestIndyCallSiteDependencyCleaning extends TestBase {
 
+    public static TestIndyCallSiteDependencyCleaning testController;
+
     public String pkgName;
     public String indyClassNameWithoutPkg;
     public String slashedPkgName;
@@ -38,6 +40,8 @@ public class TestIndyCallSiteDependencyCleaning extends TestBase {
 
     public Handle bootStrapMethodHandle;
     public Class<?> indyClass;
+    public CallSite indyCallSite1;
+    public CallSite indyCallSite2;
     public SimpleClassLoader simpleLoader;
     public PhantomReference<SimpleClassLoader> phantomSimpleLoader;
 
@@ -58,6 +62,7 @@ public class TestIndyCallSiteDependencyCleaning extends TestBase {
     public void runTest() {
         try {
             // setup
+            testController = this;
             pkgName = getClass().getPackage().getName();
             slashedPkgName = pkgName.replace('.', '/');
             indyClassNameWithoutPkg = "ClassWithInvokeDynamic";
@@ -87,10 +92,18 @@ public class TestIndyCallSiteDependencyCleaning extends TestBase {
             //   -> classloader and MutableCallSite remain dead
             //   -> the nmethod is unloaded and its dependencies are flushed
             //
-            indyRnbl = null;
-            indyClass = null;
+
             // w/o the phantom reference the nmethod would be made unloaded to get rid of the simpleLoader
             phantomSimpleLoader = new PhantomReference<>(simpleLoader, new ReferenceQueue<>());
+            System.gc();
+            System.gc();
+            System.gc();
+            System.err.printf("&simpleLoader: 0x%x\n", addressOf(simpleLoader));
+            System.err.printf("&indyCallSite1: 0x%x\n", addressOf(indyCallSite1));
+            System.err.printf("&indyCallSite2: 0x%x\n", addressOf(indyCallSite2));
+            indyRnbl = null;
+            indyClass = null;
+            indyCallSite1 = indyCallSite2 = null;
             simpleLoader = null;
 
             System.err.println("Wait for CompileTask");
@@ -200,6 +213,11 @@ public class TestIndyCallSiteDependencyCleaning extends TestBase {
         CallSite cs = new MutableCallSite(mine);
 
         System.err.println("<<<#bootstrap:cs:"+cs);
+        if (testController.indyCallSite1 == null) {
+            testController.indyCallSite1 = cs;
+        } else {
+            testController.indyCallSite2 = cs;
+        }
         return cs ;
       }
 }
