@@ -2,7 +2,9 @@ package testlib;
 
 import java.lang.reflect.Field;
 import java.util.Scanner;
+import sun.misc.Unsafe;
 
+@SuppressWarnings("restriction")
 public class TestBase implements Tracer {
 
     public static final int K = 1<<10;
@@ -130,5 +132,37 @@ public class TestBase implements Tracer {
             ex.printStackTrace();
         }
         return ch;
+    }
+
+    private static Unsafe unsafe;
+
+    static {
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            unsafe = (Unsafe)field.get(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static long addressOf(Object o) throws Exception {
+        Object[] array = new Object[] {o};
+
+        long baseOffset = unsafe.arrayBaseOffset(Object[].class);
+        int addressSize = unsafe.addressSize();
+        long objectAddress;
+        switch (addressSize) {
+            case 4:
+                objectAddress = unsafe.getInt(array, baseOffset);
+                break;
+            case 8:
+                objectAddress = unsafe.getLong(array, baseOffset);
+                break;
+            default:
+                throw new Error("unsupported address size: " + addressSize);
+        }
+
+        return(objectAddress);
     }
 }
