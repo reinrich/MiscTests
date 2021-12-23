@@ -103,12 +103,12 @@ public class TestPromotionFailure extends TestBase {
     }
 
     private void printConfiguration() throws IllegalArgumentException, IllegalAccessException {
-        msg("JavaHeap.MAX_JAVA_HEAP_BYTES: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
+        log("JavaHeap.MAX_JAVA_HEAP_BYTES: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
         Field[] fields = getClass().getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field ff = fields[i];
             if (java.lang.reflect.Modifier.isStatic(ff.getModifiers())) {
-                msg(ff.getName() + ": " + ff.get(null));
+                log(ff.getName() + ": " + ff.get(null));
             }
         }
     }
@@ -124,9 +124,9 @@ public class TestPromotionFailure extends TestBase {
         mortalObjs = new NestedArrayList<>();
         long moIdx = 0;
 
-        msg("###### Build-up of object graph");
-        msgIncInd();
-        msg(heap);
+        log("###### Build-up of object graph");
+        logIncInd();
+        log(heap);
         while(immortalObjs.size() < IMMORTAL_OBJ_COUNT || mortalObjs.size() < MORTAL_OBJ_COUNT) {
             // allocate 100 objects according to the ALLOC_PERCENTAGES
             int immoToAlloc = immortalObjs.size() >= IMMORTAL_OBJ_COUNT ? 0 : ALLOC_PERCENTAGE_IMMORTAL;
@@ -149,11 +149,11 @@ public class TestPromotionFailure extends TestBase {
                 }
             }
         }
-        msg("allocated " + immortalObjs.size() + " immortalObjs (" + immortalObjs + ")");
+        log("allocated " + immortalObjs.size() + " immortalObjs (" + immortalObjs + ")");
         heap.gc();
-        msg(heap);
-        msgDecInd();
-        msg();
+        log(heap);
+        logDecInd();
+        log();
     }
 
     private void continouslyAllocateObjects() {
@@ -162,9 +162,9 @@ public class TestPromotionFailure extends TestBase {
         long bytesAllocated = 0;
         long bytesAllocatedForPromoFailure = 0;
 
-        msg("###### Continously allocating objects");
-        msgIncInd();
-        msg(heap);
+        log("###### Continously allocating objects");
+        logIncInd();
+        log(heap);
         boolean shouldTriggerPromoFailure = false;
         while(shouldContinueToAllocate) {
             // allocate 100-IMMORTAL_OBJ_COUNT objects according to the ALLOC_PERCENTAGES
@@ -173,7 +173,7 @@ public class TestPromotionFailure extends TestBase {
             
             if (!shouldTriggerPromoFailure) {
                 if (bytesAllocated > PROMO_FAILURE_THRESHOLD_BYTES) {
-                    msg("###### entering promotion failure mode");
+                    log("###### entering promotion failure mode");
                     if (PROMO_FAILURE_TRIGGER_SYSTEM_GC_BEFORE) {
                         heap.gc();
                     }
@@ -182,7 +182,7 @@ public class TestPromotionFailure extends TestBase {
                 }
             } else {
                 if (bytesAllocatedForPromoFailure > PROMO_FAILURE_BYTES_TO_KEEP_ALIVE) {
-                    msg("###### leaving promotion failure mode");
+                    log("###### leaving promotion failure mode");
                     objsToKeepForPromotionFailure = new NestedArrayList<>();
                     if (PROMO_FAILURE_TRIGGER_SYSTEM_GC_BEFORE) {
                         heap.gc();
@@ -210,9 +210,9 @@ public class TestPromotionFailure extends TestBase {
                 }
             }
         }
-        msg(heap);
-        msgDecInd();
-        msg();
+        log(heap);
+        logDecInd();
+        log();
     }
 
     private byte[] allocImmortalObject() {

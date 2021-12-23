@@ -32,12 +32,12 @@ public class JavaHeap {
     }
 
     public void gc() {
-        test.msg(2, "calling System.gc()");
+        test.log(2, "calling System.gc()");
         long start = test.trcActive(3) ? System.currentTimeMillis() : 0;
         System.gc();
         long end = test.trcActive(3) ? System.currentTimeMillis() : 0;
         if (test.trcActive(3)) {
-            test.msg("System.gc() duration " + (end-start) + "ms");
+            test.log("System.gc() duration " + (end-start) + "ms");
         }
     }
 

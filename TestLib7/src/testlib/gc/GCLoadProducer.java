@@ -61,9 +61,9 @@ public class GCLoadProducer extends TestBase implements Runnable {
         humObjs = new NestedArrayList<>();
         long moIdx = 0;
 
-        msg("###### Build-up of object graph");
-        msgIncInd();
-        msg(heap);
+        log("###### Build-up of object graph");
+        logIncInd();
+        log(heap);
         while(immortalObjs.size() < opts.immortal_obj_count || mortalObjs.size() < opts.mortal_obj_count || humObjs.size() < opts.hum_obj_count) {
             // allocate 100 objects according to the ALLOC_PERCENTAGES
             int immoToAlloc = immortalObjs.size() >= opts.immortal_obj_count ? 0 : opts.alloc_percentage_immortal;
@@ -91,20 +91,20 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 }
             }
         }
-        msg("allocated " + immortalObjs.size() + " immortalObjs (" + immortalObjs + ")");
+        log("allocated " + immortalObjs.size() + " immortalObjs (" + immortalObjs + ")");
         heap.gc();
-        msg(heap);
-        msgDecInd();
-        msg();
+        log(heap);
+        logDecInd();
+        log();
     }
 
     private void continouslyAllocateObjects() {
         long moIdx = 0;
         long humIdx = 0;
 
-        msg("###### Continously allocating objects");
-        msgIncInd();
-        msg(heap);
+        log("###### Continously allocating objects");
+        logIncInd();
+        log(heap);
 
         int allocationsSinceLastHumongousAlloc = 0;
         boolean doAllocHumongous = opts.hum_obj_count > 0;
@@ -142,9 +142,9 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 }
             }
         }
-        msg(heap);
-        msgDecInd();
-        msg();
+        log(heap);
+        logDecInd();
+        log();
     }
 
     private byte[] allocImmortalObject() {

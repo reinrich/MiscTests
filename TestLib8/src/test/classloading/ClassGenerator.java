@@ -40,7 +40,7 @@ public class ClassGenerator {
         String className = pkgName+"."+classNameWithoutPkg;
         String slashedClassName = slashedPkgName+"/"+classNameWithoutPkg;
 
-        tracer.msg(1, "Generating bytes of " + className);
+        tracer.log(1, "Generating bytes of " + className);
 
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         MethodVisitor mv;
@@ -81,7 +81,7 @@ public class ClassGenerator {
 
     private void dumpClass(String classNameWithoutPkg, byte[] classToBeUnloadedBytesBytes) throws IOException {
         String classFileName = classNameWithoutPkg+".class";
-        tracer.msg("dumping class bytes to " + classFileName);
+        tracer.log("dumping class bytes to " + classFileName);
         FileOutputStream fos = new FileOutputStream(classFileName );
         fos.write(classToBeUnloadedBytesBytes);
         fos.close();

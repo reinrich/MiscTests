@@ -124,15 +124,15 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
             Thread.sleep(30000);
             switch (opts.testType) {
             case REF_FEW_SOFTREFERENCES_STRONG_REACHABLE:
-                msg("###### Drop referents keepalive");
+                log("###### Drop referents keepalive");
                 referents = null;
                 Thread.sleep(30000);
-                msg("###### Terminated");
+                log("###### Terminated");
                 break;
             case REF_LOW_SOFTREFERENCES_TURNOVER:
                 dropStrongRefsAndReplaceClearedSoftReferences();
             default:
-                msg("Unhandled RP test type: " + opts.testType);
+                log("Unhandled RP test type: " + opts.testType);
                 Thread.dumpStack();
                 System.exit(1);
                 break;
@@ -148,9 +148,9 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
     }
 
     private void setUp() throws Exception {
-        msg("###### Set-up");
+        log("###### Set-up");
         createKeepAlive();
-        msgIncInd();
+        logIncInd();
         queue = new ReferenceQueue<Object>();
         for (int i = 0; i < opts.soft_refs_count; i++) {
             Object referent = new Object();
@@ -158,8 +158,8 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
             referents.add(referent);
             softRefs.add(reference);
         }
-        msgDecInd();
-        msg("###### Set-up Done");
+        logDecInd();
+        log("###### Set-up Done");
     }
 
     private void createKeepAlive() {
@@ -173,7 +173,7 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
             softRefs  = new ArrayListKeepAlive<SoftReference<Object>>();
             break;
         default:
-            msg("Unhandled RP test type: " + opts.testType);
+            log("Unhandled RP test type: " + opts.testType);
             Thread.dumpStack();
             System.exit(1);
             break;
@@ -188,7 +188,7 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
                 if (idxStrongRef >= referents.size()) {
                     idxStrongRef = 0;
                 }
-                msg(4, "Clearing strong reference at index " + idxStrongRef);
+                log(4, "Clearing strong reference at index " + idxStrongRef);
                 referents.clearAt(idxStrongRef);
             }
             // Wait for notification about cleared soft references and create new
@@ -198,7 +198,7 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
                 try {
                     reference = (SoftReferenceWithId<Object>) queue.remove();
                     int idxCleared = reference.id;
-                    msg(4, "Soft reference at index " + idxCleared + " was cleared. Recreate!");
+                    log(4, "Soft reference at index " + idxCleared + " was cleared. Recreate!");
                     Object referent = new Object();
                     reference = new SoftReferenceWithId<Object>(idxCleared, referent, queue);
                     referents.setAt(idxCleared, referent);
@@ -232,13 +232,13 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
     }
 
     @Override
-    public void msg(Object msg) {
-        super.msg("[" + getClass().getCanonicalName() + "]" + msg);
+    public void log(Object msg) {
+        super.log("[" + getClass().getCanonicalName() + "]" + msg);
     }
 
 
     @Override
-    public void msg(int lvl, Object msg) {
-        super.msg(lvl, "[" + getClass().getCanonicalName() + "]" + msg);
+    public void log(int lvl, Object msg) {
+        super.log(lvl, "[" + getClass().getCanonicalName() + "]" + msg);
     }
 }

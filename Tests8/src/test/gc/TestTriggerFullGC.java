@@ -16,7 +16,7 @@ public class TestTriggerFullGC extends TestBase implements Runnable {
                 consumeAllMemory();
             } catch (Throwable e) {
                 consumedMemory = null;
-                msg("Caught OutOfMemoryError");
+                log("Caught OutOfMemoryError");
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e1) { }
@@ -36,7 +36,7 @@ public class TestTriggerFullGC extends TestBase implements Runnable {
     public LinkedList consumedMemory;
 
     public void consumeAllMemory() {
-        msg("consume all memory");
+        log("consume all memory");
         int size = 128 * 1024 * 1024;
         while(size > 0) {
             try {

@@ -59,7 +59,7 @@ public class TestGCHistoryReferenceProcessing extends TestBase {
     }
 
     private void createReferenceObjects(ReferenceType rt) {
-        msg("Creating " + rt + " reference objects");
+        log("Creating " + rt + " reference objects");
         refs = new ArrayList<Reference<byte[]>>();
         referents = new ArrayList<byte[]>();
         for (long allocatedBytes = 0; allocatedBytes < REFERENT_BYTES_TOTAL; allocatedBytes += REFERENT_BYTES) {
@@ -82,7 +82,7 @@ public class TestGCHistoryReferenceProcessing extends TestBase {
             refs.add(reference);
             referents.add(referent);
         }
-        msg("Created " + refs.size() + " j.l.r.Reference instances");
+        log("Created " + refs.size() + " j.l.r.Reference instances");
     }
 
     static class FinalizableObject {
@@ -100,23 +100,23 @@ public class TestGCHistoryReferenceProcessing extends TestBase {
         }
     }
     private void createFinalizableObjects() {
-        msg("Creating finalizable objects");
+        log("Creating finalizable objects");
         finalizableRefs = new ArrayList<FinalizableObject>();
         for (long allocatedBytes = 0; allocatedBytes < REFERENT_BYTES_TOTAL; allocatedBytes += REFERENT_BYTES) {
             FinalizableObject finalizable = new FinalizableObject();
             finalizableRefs.add(finalizable);
         }
-        msg("Created " + finalizableRefs.size() + " FinalizableObject instances");
+        log("Created " + finalizableRefs.size() + " FinalizableObject instances");
     }
 
     private void clearStrongReferences() {
-        msg("Creating reference objects");
+        log("Creating reference objects");
         if (referents != null) referents.clear();
         if (finalizableRefs != null) finalizableRefs.clear();
     }
 
     private void triggerGC() {
-        msg("Calling System.gc()");
+        log("Calling System.gc()");
         System.gc();
     }
 
@@ -132,7 +132,7 @@ public class TestGCHistoryReferenceProcessing extends TestBase {
     public LinkedList consumedMemory;
 
     public void consumeAllMemory() {
-        msg("consume all memory");
+        log("consume all memory");
         int size = 128 * 1024 * 1024;
         while(true) {
             try {

@@ -34,7 +34,7 @@ public class TestWeakBehindSoftReference extends TestBase {
                 // old generation.
                 weakReferent = softReference.get().get();
 
-                msg("### Starting thread that produces GC load");
+                log("### Starting thread that produces GC load");
                 TestGCOptions opts = new TestGCOptions();
                 opts.busy_wait_iterations = 1<<18;
                 gcLoad = new GCLoadProducer(opts);
@@ -58,16 +58,16 @@ public class TestWeakBehindSoftReference extends TestBase {
 
         do {
             if (TRIGGER_GC_BY_CALLING_SYSTEM_GC) {
-                msg("System.gc()");
+                log("System.gc()");
                 System.gc();
             } else if (weakReferent != null &&
                     System.currentTimeMillis() - timeStampStart > DELAY_BEFORE_DROPPING_STRONG_REF_TO_WEAK_REFERENT_MS) {
-                msg("### Clearing strong ref to weakReferent");
+                log("### Clearing strong ref to weakReferent");
                 weakReferent = null;
             }
             Reference<? extends Object> theReference = referenceQueue.poll();
             if (theReference != null) {
-                msg("### from referenceQueue: " + theReference);
+                log("### from referenceQueue: " + theReference);
                 referenceCount--;
             }
             Thread.sleep(500);
@@ -80,9 +80,9 @@ public class TestWeakBehindSoftReference extends TestBase {
         WeakReference<Object> weakReference = new WeakReference<Object>(weakReferent, referenceQueue);
         SoftReference<WeakReference<Object>> softReference = new SoftReference<WeakReference<Object>>(weakReference, referenceQueue);
 
-        msg(weakReference);
-        msg(weakReferent);
-        msg(softReference);
+        log(weakReference);
+        log(weakReferent);
+        log(softReference);
 
         return softReference;
     }

@@ -90,8 +90,8 @@ public class TestOopsOnCardIterateOverObjWithUnloadedClass {
         System.gc();
         msg("freeMemory:\t" + rt.freeMemory()/M + " MB");
         msg("maxMemory:\t" + rt.maxMemory()/M + " MB");
-        msg("g1NumMaxRegions:\t" + wb.g1NumMaxRegions());
-        msg("g1RegionSize:\t" + wb.g1RegionSize()/K + " KB");
+        log("g1NumMaxRegions:\t" + wb.g1NumMaxRegions());
+        log("g1RegionSize:\t" + wb.g1RegionSize()/K + " KB");
     }
 
     private void triggerYoungGCsWhileModifyingOldObjs() {

@@ -86,36 +86,36 @@ public class CallSiteDependenciesExperiments extends TestBaseOld {
                     generateAndLoadClassWithInvokedynamik(true);
                     break;
                 case 's':
-                    msg("forcing nmethod sweeping");
+                    log("forcing nmethod sweeping");
                     wb.forceNMethodSweep();
                     break;
                 case 'g':
-                    msg("calling System.gc()");
+                    log("calling System.gc()");
                     System.gc();
                     break;
                 case 'y':
                     triggerYoungGC();
                     break;
                 case 'u':
-                    msg("trigger unloading of generated class");
+                    log("trigger unloading of generated class");
                     indyRnbl = null;
                     indyClass = null;
                     phantomSimpleLoader = null;
                     simpleLoader = null;
                     break;
                 case 'U':
-                    msg("trigger unloading of generated class");
+                    log("trigger unloading of generated class");
                     indyRnbl = null;
                     indyClass = null;
                     phantomSimpleLoader = new PhantomReference<>(simpleLoader, new ReferenceQueue<>());
                     simpleLoader = null;
                     break;
                 case 'c':
-                    msg("check: indyClass: " + indyClass);
+                    log("check: indyClass: " + indyClass);
                     System.gc();
                     break;
                 default:
-                    msg("UNKNOWN COMMAND: '" + ch + "'");
+                    log("UNKNOWN COMMAND: '" + ch + "'");
                 }
             }
         } catch (Throwable e) {
@@ -125,7 +125,7 @@ public class CallSiteDependenciesExperiments extends TestBaseOld {
     }
 
     public void triggerYoungGC() {
-        msg("triggering young gc by allocating " + YOUNG_GC_TRIGGER_BYTES_TO_ALLOCATE/M + "MB");
+        log("triggering young gc by allocating " + YOUNG_GC_TRIGGER_BYTES_TO_ALLOCATE/M + "MB");
         long bytes_to_allocate = YOUNG_GC_TRIGGER_BYTES_TO_ALLOCATE;
         do {
             @SuppressWarnings("unused")
@@ -136,12 +136,12 @@ public class CallSiteDependenciesExperiments extends TestBaseOld {
     private void invokeRunnableOtherThread(Runnable rnbl, int times) {
         Thread tt = new Thread() {
             public void run() {
-                msg("invoking generated Runnable " + times + " times");
+                log("invoking generated Runnable " + times + " times");
                 int iter = times;
                 while (iter-- > 0) {
                     rnbl.run();
                 }
-                msg("DONE");
+                log("DONE");
             }
         };
         tt.start();
@@ -155,7 +155,7 @@ public class CallSiteDependenciesExperiments extends TestBaseOld {
     }
 
     public void generateAndLoadClassWithInvokedynamik(boolean enterEndlessLoopInNmethod) throws Exception {
-        msg("Generating bytes of " + indyClassName);
+        log("Generating bytes of " + indyClassName);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         FieldVisitor fv;
         MethodVisitor mv;
@@ -206,9 +206,9 @@ public class CallSiteDependenciesExperiments extends TestBaseOld {
         dumpClass(indyClassNameWithoutPkg, classWithInvokeDynamicBytes);
 
         simpleLoader = new SimpleClassLoader();
-        msg("Loading the synthetic class using the ClassLoader " + simpleLoader);
+        log("Loading the synthetic class using the ClassLoader " + simpleLoader);
         indyClass = simpleLoader.myDefineClass(null, classWithInvokeDynamicBytes, 0, classWithInvokeDynamicBytes.length);
-        msg("Loaded " + indyClass);
+        log("Loaded " + indyClass);
 
         // get jit compiled
         Constructor<?> ctor = indyClass.getConstructor(getClass());
@@ -217,11 +217,11 @@ public class CallSiteDependenciesExperiments extends TestBaseOld {
         for (int i = 0; i < 4; i++) {
             invokeRunnableOtherThread(indyRnbl, 100000);
             Thread.sleep(1000);
-            msg("counter:"+counter);
+            log("counter:"+counter);
         }
 
         if (enterEndlessLoopInNmethod) {
-            msg("triggering endless loop in indyCalleeMethod()");
+            log("triggering endless loop in indyCalleeMethod()");
             INDY_CALLEE_LOOPS=1<<60;
             invokeRunnableOtherThread(indyRnbl, 1000);
         }

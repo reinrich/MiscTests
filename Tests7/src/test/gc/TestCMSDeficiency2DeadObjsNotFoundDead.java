@@ -28,7 +28,7 @@ public class TestCMSDeficiency2DeadObjsNotFoundDead extends TestBase {
             createReferences();
             old = weakReferenceToOld.get();
 
-            msg("### Starting thread that produces GC load");
+            log("### Starting thread that produces GC load");
             TestGCOptions opts = TestGCOptions.getInstance();
             opts.busy_wait_iterations = 1<<14;
             gcLoad = new GCLoadProducer(opts);
@@ -50,13 +50,13 @@ public class TestCMSDeficiency2DeadObjsNotFoundDead extends TestBase {
         do {
             Reference<? extends Object> theReference = referenceQueue.poll();
             if (theReference != null) {
-                msg("### old object died!!!: " + theReference);
+                log("### old object died!!!: " + theReference);
                 oldDied = true;
             } else {
-                msg("### renewing new object");
+                log("### renewing new object");
                 old = weakReferenceToOld.get();
                 if (old == null) {
-                    msg("### old object died!!!: " + theReference);
+                    log("### old object died!!!: " + theReference);
                     oldDied = true;
                 } else {
                     old.young = new Young(old);
@@ -74,7 +74,7 @@ public class TestCMSDeficiency2DeadObjsNotFoundDead extends TestBase {
         oldWeakReferent.young = young;
         weakReferenceToOld = new WeakReference<>(oldWeakReferent, referenceQueue);
 
-        msg(weakReferenceToOld);
+        log(weakReferenceToOld);
     }
 
     public static class Old {

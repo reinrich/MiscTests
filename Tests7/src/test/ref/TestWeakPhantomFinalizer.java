@@ -48,30 +48,30 @@ public class TestWeakPhantomFinalizer extends TestBase {
     }
 
     public void run(REF_TYPE ref_type) throws Exception {
-        msg("### Testing " + ref_type);
-        msgIncInd();
+        log("### Testing " + ref_type);
+        logIncInd();
 
         int gcCount = 1;
         System.gc();
         long allocatedBefore = heap.allocatedBytes();
-        msg(allocatedBefore/K + "K allocated before test");
+        log(allocatedBefore/K + "K allocated before test");
         RefHolder ref = new RefHolder(ref_type);
 
         long allocatedNow = heap.allocatedBytes();
-        msg(allocatedNow/K + "K allocated now");
+        log(allocatedNow/K + "K allocated now");
         do {
-            msg();
-            msg(gcCount + ". call to System.gc()");
+            log();
+            log(gcCount + ". call to System.gc()");
             gcCount++;
             System.gc();
             allocatedNow = heap.allocatedBytes();
-            msg(allocatedNow/K + "K allocated now");
-            msg("sleeping...");
+            log(allocatedNow/K + "K allocated now");
+            log("sleeping...");
             ref.checkRef();
             Thread.sleep(100);
         } while(allocatedNow > allocatedBefore + 10*K);
-        msgDecInd();
-        msg();
+        logDecInd();
+        log();
     }
 
     private class RefHolder {
@@ -104,7 +104,7 @@ public class TestWeakPhantomFinalizer extends TestBase {
                 TODO();
             }
             if (ref != null) {
-                msg("new Reference object: " + ref);
+                log("new Reference object: " + ref);
             }
         }
 
@@ -125,20 +125,20 @@ public class TestWeakPhantomFinalizer extends TestBase {
             case WEAK_REF_WITH_QUEUE:
             case PHANTOM_REF:
                 for(Reference<? extends Object> x; (x = refQ.poll()) != null ; ) {
-                    msg("refQ -> x = " + x);
-                    msg("x.get() -> " + x.get());
-                    msg("x.referent (reflective) -> " + getReferentUsingReflection(x));
+                    log("refQ -> x = " + x);
+                    log("x.get() -> " + x.get());
+                    log("x.referent (reflective) -> " + getReferentUsingReflection(x));
                     if (EXPLICITELY_CEAR_REFERENCE) {
-                        msgIncInd();
-                        msg("explicitly clearing the referent");
-                        msgDecInd();
+                        logIncInd();
+                        log("explicitly clearing the referent");
+                        logDecInd();
                         x.clear();
                     }
                 }
             case WEAK_REF:
                 if (ref.get() == null && !alreadyPrinted) {
                     alreadyPrinted = true;
-                    msg("ref.get() -> null");
+                    log("ref.get() -> null");
                 }
                 break;
             default:
@@ -163,7 +163,7 @@ public class TestWeakPhantomFinalizer extends TestBase {
         }
 
         protected void finalize() throws Throwable {
-            msg("Finalizer was called");
+            log("Finalizer was called");
         }
     }
 

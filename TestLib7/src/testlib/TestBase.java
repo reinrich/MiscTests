@@ -49,22 +49,22 @@ public class TestBase implements Tracer {
     }
 
 
-    public void msgIncInd() {
+    public void logIncInd() {
         indentation += 2;
     }
 
-    public void msgDecInd() {
+    public void logDecInd() {
         indentation -= 2;
     }
 
-    public void msg() {
-        msg(0, "");
+    public void log() {
+        log(0, "");
     }
-    public void msg(Object msg) {
-        msg(0, msg);
+    public void log(Object msg) {
+        log(0, msg);
     }
 
-    public void msg(int level, Object msg) {
+    public void log(int level, Object msg) {
         if (level <= trcLevel) {
             printIndentation();
             System.out.println(msg);;
@@ -94,13 +94,13 @@ public class TestBase implements Tracer {
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     val = "n.a. (IllegalArgumentException | IllegalAccessException)";
                 }
-                msg(ff.getName() + ": " + val);
+                log(ff.getName() + ": " + val);
             }
         }
     }
 
     public void waitForEnter(String prompt) {
-        msg(prompt);
+        log(prompt);
         waitForEnter();
     }
 
@@ -115,7 +115,7 @@ public class TestBase implements Tracer {
     }
 
     public char getCharacter(String prompt) {
-        msg(prompt);
+        log(prompt);
         return getCharacter();
     }
 

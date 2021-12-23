@@ -68,7 +68,7 @@ public class MetaSpaceLoadProducer extends TestBase implements Runnable {
     private byte[][] generateClassBytes(String type, int classesPerLoader, int methodsPerClass) throws Exception {
         byte[][] classesBytes = new byte[classesPerLoader][];
         ClassGenerator clsGen = new ClassGenerator("test.generate."+type, this);
-        msg("## generating " + classesPerLoader + " byte arrays used as template for " + type + " classes");
+        log("## generating " + classesPerLoader + " byte arrays used as template for " + type + " classes");
         for (int i=0; i<classesBytes.length; i++) {
             classesBytes[i] = clsGen.generateClass("DummyClass"+i, methodsPerClass);
         }
@@ -85,16 +85,16 @@ public class MetaSpaceLoadProducer extends TestBase implements Runnable {
 
         long moIdx = 0;
 
-        msg("###### Set-up: generate class templates");
-        msgIncInd();
+        log("###### Set-up: generate class templates");
+        logIncInd();
         immortalClassesBytes   = generateClassBytes("immortal",    opts.classes_per_immortal_loader,    opts.methods_per_class);
         mortalClassesBytes     = generateClassBytes("mortal",      opts.classes_per_mortal_loader,      opts.methods_per_class);
         shortLivedClassesBytes = generateClassBytes("short_lived", opts.classes_per_short_lived_loader, opts.methods_per_class);
-        msgDecInd();
+        logDecInd();
 
-        msg("###### Set-up: allocate all types until immortals are there");
-        msgIncInd();
-        msg(heap);
+        log("###### Set-up: allocate all types until immortals are there");
+        logIncInd();
+        log(heap);
         while(immortals.size() < opts.immortal_loader_count || mortals.size() < opts.mortal_loader_count) {
             // allocate 100 objects according to the ALLOC_PERCENTAGES
             int immoToAlloc = immortals.size() >= opts.immortal_loader_count ? 0 : opts.alloc_classes_per_cycle_immortal;
@@ -117,19 +117,19 @@ public class MetaSpaceLoadProducer extends TestBase implements Runnable {
                 }
             }
         }
-        msg("allocated " + immortals.size() + " immortalObjs (" + immortals + ")");
+        log("allocated " + immortals.size() + " immortalObjs (" + immortals + ")");
         heap.gc();
-        msg(heap);
-        msgDecInd();
-        msg();
+        log(heap);
+        logDecInd();
+        log();
     }
 
     private void continouslyAllocateObjects() throws Exception {
         long moIdx = 0;
 
-        msg("###### Continously load classes using the mortal and short lived loaders");
-        msgIncInd();
-        msg(heap);
+        log("###### Continously load classes using the mortal and short lived loaders");
+        logIncInd();
+        log(heap);
         while(shouldContinueToAllocate) {
             // allocate 100-immortal_count classloaders according to the ALLOC_PERCENTAGES
             int moToAlloc = opts.alloc_classes_per_cycle_mortal;
@@ -155,15 +155,15 @@ public class MetaSpaceLoadProducer extends TestBase implements Runnable {
 
             long duration = System.currentTimeMillis() - timeBefore;
             long minDuration = Math.round((float)totalClassesLoaded / opts.class_allocation_rate_per_ms);
-            msg("## loaded " + totalClassesLoaded + " classes in " + duration + "ms ("+ minDuration + "ms minDuration)");
+            log("## loaded " + totalClassesLoaded + " classes in " + duration + "ms ("+ minDuration + "ms minDuration)");
             if (minDuration > duration+1) {
-                msg(3, "sleeping " + (minDuration-duration) + "ms");
+                log(3, "sleeping " + (minDuration-duration) + "ms");
                 Thread.sleep(minDuration-duration);
             }
         }
-        msg(heap);
-        msgDecInd();
-        msg();
+        log(heap);
+        logDecInd();
+        log();
     }
 
     private ClassLoader allocImmortal() {

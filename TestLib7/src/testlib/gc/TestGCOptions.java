@@ -187,7 +187,7 @@ public class TestGCOptions {
     }
 
     public void printOn(Tracer tracer) {
-        tracer.msg("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
+        tracer.log("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
         tracer.trcInstanceFields(this);
     }
 

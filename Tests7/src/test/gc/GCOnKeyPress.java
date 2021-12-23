@@ -38,14 +38,14 @@ public class GCOnKeyPress extends TestBase {
     }
 
     public void runTest() {
-        msg("Running with the following options: ");
+        log("Running with the following options: ");
         opts.printOn(this);
         GCLoadProducer gcLoad = new GCLoadProducer(opts);
         gcLoad.runInBackground();
         gcLoad.waitUntilReady2go();
         while (true) {
             waitForEnter("-- press key to trigger System.gc --");
-            msg("### Calling System.gc()");
+            log("### Calling System.gc()");
             System.gc();
         }
     }

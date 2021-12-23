@@ -2,17 +2,17 @@ package testlib;
 
 public interface Tracer {
 
-    public void msg();
+    public void log();
 
-    public void msg(Object msg);
+    public void log(Object msg);
 
-    public void msg(int level, Object msg);
+    public void log(int level, Object msg);
 
     public boolean trcActive(int level);
 
-    public void msgIncInd();
+    public void logIncInd();
 
-    public void msgDecInd();
+    public void logDecInd();
 
     public void trcInstanceFields(Object obj);
 
