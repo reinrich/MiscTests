@@ -11,27 +11,35 @@ import java.net.URL;
  */
 public class DirectClassLoader extends ClassLoader {
 
-    private Class<?> defineDirectly(String className) throws ClassNotFoundException {
-        try {
-            String binaryName = className.replace(".", "/") + ".class";
-            URL url = getParent().getResource(binaryName);
-            if (url == null) {
-                throw new IOException("Resource not found: '" + binaryName + "'");
-            }
-            InputStream is = url.openStream();
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    public Class<?> findClass(String className) throws ClassNotFoundException {
+        synchronized (getClassLoadingLock(className)) {
+            // First, check if the class has already been loaded
+            Class<?> c = findLoadedClass(className);
+            if (c == null) {
+                try {
+                    String binaryName = className.replace(".", "/") + ".class";
+                    URL url = getParent().getResource(binaryName);
+                    if (url == null) {
+                        throw new IOException("Resource not found: '" + binaryName + "'");
+                    }
+                    InputStream is = url.openStream();
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-            int nRead;
-            byte[] data = new byte[16384];
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
+                    int nRead;
+                    byte[] data = new byte[16384];
+                    while ((nRead = is.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, nRead);
+                    }
 
-            byte[] b = buffer.toByteArray();
-            return defineClass(className, b, 0, b.length);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new ClassNotFoundException("Could not define directly '" + className + "'");
+                    byte[] b = buffer.toByteArray();
+                    c = defineClass(className, b, 0, b.length);
+                    System.out.println("DirectLoader defined class " + className);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new ClassNotFoundException("Could not define directly '" + className + "'");
+                }
+            }
+            return c;
         }
     }
 
@@ -43,7 +51,7 @@ public class DirectClassLoader extends ClassLoader {
             throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException, NoSuchMethodException, SecurityException {
-        Class<?> c = defineDirectly(className);
+        Class<?> c = findClass(className);
         return c.getDeclaredConstructor().newInstance();
     }
 
