@@ -13,19 +13,19 @@ public class CallMonomorphicAbstractDeclaredReceiver2ConcreteReceiver extends Te
     }
 
     public static abstract class DeclaredReceiver {
-        public abstract int testMethod_callee();
+        public abstract int testMethod_callee_dontinline_dojit();
     }
 
     public static class ConcreteReceiver extends DeclaredReceiver {
         @Override
-        public int testMethod_callee() {
+        public int testMethod_callee_dontinline_dojit() {
             return 0;
         }
     }
 
     public static class ConcreteReceiver2 extends DeclaredReceiver {
         @Override
-        public int testMethod_callee() {
+        public int testMethod_callee_dontinline_dojit() {
             return 2;
         }
     }
@@ -39,13 +39,13 @@ public class CallMonomorphicAbstractDeclaredReceiver2ConcreteReceiver extends Te
             checksum += testMethod_dojit(recv);
         }
         System.out.println("checksum:" + checksum);
-        waitForEnter("Press Enter to start GC Load");
+        waitForEnter("Press Enter to call again");
         for (int i=0; i<30_000; i++) {
             checksum += testMethod_dojit(recv);
         }
     }
 
     public static int testMethod_dojit(DeclaredReceiver receiver) {
-        return receiver.testMethod_callee();
+        return receiver.testMethod_callee_dontinline_dojit();
     }
 }

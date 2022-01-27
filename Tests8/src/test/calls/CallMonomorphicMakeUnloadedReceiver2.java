@@ -4,37 +4,34 @@ import test.classloading.DirectClassLoader;
 import testlib.TestBase;
 
 // Monomorphic Virtual Call
-// Declared (static) receiver is abstract.
-// Single concrete receiver in other classloader
+// Declared (static) receiver is concrete.
+// Single concrete receiver.
+// nmethod with opt virt. call ist unloaded when concrete method is unloaded
+// Check inline cache clearing of caller.
 
-public class CallMonomorphicAbstractDeclaredReceiverSingleConcreteReceiverWithUnloading extends TestBase {
+public class CallMonomorphicMakeUnloadedReceiver2 extends TestBase {
 
     public static void main(String[] args) {
-        new CallMonomorphicAbstractDeclaredReceiverSingleConcreteReceiverWithUnloading().runTest();
+        new CallMonomorphicMakeUnloadedReceiver2().runTest();
     }
 
-    public static abstract class DeclaredReceiver {
-        public abstract int testMethod_callee_dontinline();
+    public static class DeclaredReceiver {
+        public int testMethod_callee() {
+            return 0;
+        }
     }
 
     public static class ConcreteReceiverR1 extends DeclaredReceiver {
         @Override
-        public int testMethod_callee_dontinline() {
-            return 0x111;
-        }
-    }
-
-    public static class ConcreteReceiverR2 extends DeclaredReceiver {
-        @Override
-        public int testMethod_callee_dontinline() {
-            return 0x112;
+        public int testMethod_callee() {
+            return 0;
         }
     }
 
     public void runTest() {
         try {
             runTest(getClass().getName() + "$ConcreteReceiverR1");
-            runTest(getClass().getName() + "$ConcreteReceiverR2");
+            runTest(getClass().getName() + "$ConcreteReceiverR1");
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -45,7 +42,7 @@ public class CallMonomorphicAbstractDeclaredReceiverSingleConcreteReceiverWithUn
         DeclaredReceiver recv = (DeclaredReceiver) loader.newInstance(receiverClassName);
         int checksum = 0;
         for (int i=0; i<30_000; i++) {
-            checksum += testMethod_dojit(recv);
+            checksum += testMethod_callercaller_dojit(recv);
         }
         System.out.println("checksum:" + checksum);
         waitForEnter("Press Enter to call System.GC()");
@@ -56,7 +53,11 @@ public class CallMonomorphicAbstractDeclaredReceiverSingleConcreteReceiverWithUn
         System.gc();
     }
 
-    public static int testMethod_dojit(DeclaredReceiver receiver) {
-        return receiver.testMethod_callee_dontinline();
+    public static int testMethod_callercaller_dojit(DeclaredReceiver receiver) {
+        return testMethod_opt_virt_call_dojit(receiver);
+    }
+
+    public static int testMethod_opt_virt_call_dojit(DeclaredReceiver receiver) {
+        return receiver.testMethod_callee();
     }
 }

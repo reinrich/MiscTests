@@ -31,7 +31,7 @@ public class CallMonomorphicAbstractDeclaredReceiverSingleConcreteReceiver exten
             checksum += testMethod_dojit(recv);
         }
         System.out.println("checksum:" + checksum);
-        waitForEnter("Press Enter to start GC Load");
+        waitForEnter("Press Enter to call again");
         for (int i=0; i<30_000; i++) {
             checksum += testMethod_dojit(recv);
         }

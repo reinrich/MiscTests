@@ -64,4 +64,10 @@ public class LeveledDirectClassLoader extends DirectClassLoader {
         Class<?> c = loadClass(className);
         return c.getDeclaredConstructor().newInstance();
     }
+
+    public void clearLoaderFromLevel(int i) {
+        for(; i < classLoaders.length; i++) {
+            classLoaders[i] = null;
+        }
+    }
 }
