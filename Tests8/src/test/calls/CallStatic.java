@@ -22,10 +22,10 @@ public class CallStatic extends TestBase {
     }
 
     public static int testMethod_dojit() {
-        return testMethod_static_callee();
+        return testMethod_static_callee_dontinline();
     }
 
-    public static int testMethod_static_callee() {
+    public static int testMethod_static_callee_dontinline() {
         return 0;
     }
 }
