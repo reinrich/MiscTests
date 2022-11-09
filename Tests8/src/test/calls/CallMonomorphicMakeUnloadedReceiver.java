@@ -1,5 +1,8 @@
 package test.calls;
 
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
+
 import test.classloading.DirectClassLoader;
 import testlib.TestBase;
 
@@ -26,6 +29,10 @@ public class CallMonomorphicMakeUnloadedReceiver extends TestBase {
         }
     }
 
+    public PhantomReference prRecv;
+    public ReferenceQueue queue;
+    public PhantomReference prLoader;
+
     public void runTest() {
         try {
             runTest(getClass().getName() + "$ConcreteReceiverR1");
@@ -37,19 +44,36 @@ public class CallMonomorphicMakeUnloadedReceiver extends TestBase {
         waitForEnter("Press Enter to to start test with '" + receiverClassName + "' as receiver");
         DirectClassLoader loader = new DirectClassLoader(getClass().getClassLoader());
         DeclaredReceiver recv = (DeclaredReceiver) loader.newInstance(receiverClassName);
+        queue = new ReferenceQueue();
+        prRecv = new PhantomReference(recv, queue);
+        prLoader = new PhantomReference(loader, queue);
         int checksum = 0;
         for (int i=0; i<30_000; i++) {
             checksum += testMethod_callercaller_dojit(recv);
         }
         System.out.println("checksum:" + checksum);
+
         waitForEnter("Press Enter to call System.GC()");
         loader = null;
         recv = null;
-        System.gc();
-        System.gc();
-        System.gc();
+        PhantomReference pr = null;
+        int gcCount = 0;
+        while (gcCount++ < 7) {
+            System.gc();
+            sleep(100);
+            while ((pr = (PhantomReference) queue.poll()) != null) {
+                log((pr == prLoader ? "Loader" : "Receiver") + " is unreachable");
+            }
+        }
     }
 
+    public void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            // ignored
+        }
+    }
     public static int testMethod_callercaller_dojit(DeclaredReceiver receiver) {
         return testMethod_opt_virt_call_dojit(receiver);
     }
