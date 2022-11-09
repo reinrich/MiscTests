@@ -7,10 +7,9 @@ import test.classloading.DirectClassLoader;
 
 // Monomorphic Virtual Call
 // Declared (static) receiver is abstract.
-// Single concrete receiver.
-// Loader L of class with concrete receiver is kept alive by nmethod N with opt virt. call while on stack because of dependencies
-// L becomes unreachable when nmethod N is not on stack
-// Check inline cache clearing of caller.
+// Single concrete receiver from other classloader L.
+// L is kept alive by nmethod N with opt virt. call while on stack because of dependencies
+// L becomes unreachable when nmethod N is not on stack. N is made not entrant then.
 
 public class CallMonomorphicMakeUnloadedReceiver {
     public static ReferenceQueue queue;

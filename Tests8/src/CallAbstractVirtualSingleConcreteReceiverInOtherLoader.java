@@ -8,12 +8,11 @@ import java.net.URL;
 
 // Monomorphic Virtual Call
 // Declared (static) receiver is abstract.
-// Single concrete receiver.
-// Loader L of class with concrete receiver is kept alive by nmethod N with opt virt. call while on stack because of dependencies
-// L becomes unreachable when nmethod N is not on stack
-// Check inline cache clearing of caller.
+// Single concrete receiver from other classloader L.
+// L is kept alive by nmethod N with opt virt. call while on stack because of dependencies
+// L becomes unreachable when nmethod N is not on stack. N is made not entrant then.
 
-public class CallMonomorphicMakeUnloadedReceiver {
+public class CallAbstractVirtualSingleConcreteReceiverInOtherLoader {
     public static ReferenceQueue queue;
     public static PhantomReference prRecv;
     public static PhantomReference prLoader;
@@ -22,7 +21,7 @@ public class CallMonomorphicMakeUnloadedReceiver {
     public static DeclaredReceiver recv;
 
     public static void main(String[] args) {
-        new CallMonomorphicMakeUnloadedReceiver().runTest();
+        new CallAbstractVirtualSingleConcreteReceiverInOtherLoader().runTest();
     }
 
     // Class with abstract method
@@ -75,7 +74,7 @@ public class CallMonomorphicMakeUnloadedReceiver {
         int gcCount = 0;
         while (gcCount++ < 7) {
             System.gc();
-            while ((pr = (PhantomReference) queue.remove(500)) != null) {
+            while ((pr = (PhantomReference) queue.remove(100)) != null) {
                 log((pr == prLoader ? "Loader" : "Receiver") + " is unreachable");
             }
         }
@@ -89,7 +88,7 @@ public class CallMonomorphicMakeUnloadedReceiver {
             while (gcCount++ < 7) {
                 System.gc();
                 try {
-                    while ((pr = (PhantomReference) queue.remove(500)) != null) {
+                    while ((pr = (PhantomReference) queue.remove(100)) != null) {
                         log((pr == prLoader ? "Loader" : "Receiver") + " is unreachable");
                     }
                 } catch (IllegalArgumentException | InterruptedException e) {
