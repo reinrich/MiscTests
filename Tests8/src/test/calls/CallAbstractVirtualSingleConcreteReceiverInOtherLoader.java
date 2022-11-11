@@ -11,7 +11,7 @@ import test.classloading.DirectClassLoader;
 // L is kept alive by nmethod N with opt virt. call while on stack because of dependencies
 // L becomes unreachable when nmethod N is not on stack. N is made not entrant then.
 
-public class CallMonomorphicMakeUnloadedReceiver {
+public class CallAbstractVirtualSingleConcreteReceiverInOtherLoader {
     public static ReferenceQueue queue;
     public static PhantomReference prRecv;
     public static PhantomReference prLoader;
@@ -20,7 +20,7 @@ public class CallMonomorphicMakeUnloadedReceiver {
     public static DeclaredReceiver recv;
 
     public static void main(String[] args) {
-        new CallMonomorphicMakeUnloadedReceiver().runTest();
+        new CallAbstractVirtualSingleConcreteReceiverInOtherLoader().runTest();
     }
 
     // Class with abstract method
