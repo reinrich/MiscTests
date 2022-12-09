@@ -57,5 +57,6 @@ public class DirectClassLoader extends ClassLoader {
 
     public DirectClassLoader(ClassLoader parent) {
         super(parent);
+        System.identityHashCode(this);
     }
 }

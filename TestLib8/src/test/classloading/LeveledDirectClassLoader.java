@@ -20,8 +20,10 @@ public class LeveledDirectClassLoader extends DirectClassLoader {
         super(parent);
         DirectClassLoader[] loaders = new DirectClassLoader[levels];
         loaders[0] = this;
+        System.err.println("loaders[0] : " + this);
         for (int i = 1; i < loaders.length; i++) {
             loaders[i] = new DirectClassLoader(loaders[i - 1]);
+            System.err.println("loaders[" + i +"] : " + loaders[i]);
         }
         classLoaders = loaders;
     }
@@ -34,15 +36,16 @@ public class LeveledDirectClassLoader extends DirectClassLoader {
                 Class<?> c = findLoadedClass(name);
                 if (c == null) {
                     Matcher m;
+                    String idh = Integer.toHexString(System.identityHashCode(this));
                     if ((m = CLASS_PATTERN.matcher(name)).find()) {
                         int level = Integer.parseInt(m.group(1));
                         if (level >= classLoaders.length) {
                             throw new Error("Level " + level + " too deep");
                         }
-                        System.err.println(getClass().getName() + ": loading " + name + " at level " + level);
+                        System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " at level " + level + " with " + classLoaders[level]);
                         c = classLoaders[level].findClass(name);
                     } else {
-                        System.err.println(getClass().getName() + ": loading " + name + " from parent");
+                        System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " from parent");
                         c = super.loadClass(name, resolve);
                     }
                 }
