@@ -3,6 +3,8 @@ package test.calls;
 import test.classloading.LeveledDirectClassLoader;
 import testlib.TestBase;
 
+// Scenario: invokevirtual with final target with other classloader
+
 public class CallStaticBoundVirtualFromOtherLoader extends TestBase {
 
     public static void main(String[] args) {
@@ -19,14 +21,14 @@ public class CallStaticBoundVirtualFromOtherLoader extends TestBase {
         public void clearReceiver();
     }
 
-    // Static Callee
+    // Final callee loaded in non-delegating loader
     public static class ClassB_LOAD_AT_LEVEL_1 {
         public final int testMethod_statically_bound_callee_dontinline_dojit() {
             return 0;
         }
     }
 
-    // Static Caller
+    // Caller
     public static class ClassA_LOAD_AT_LEVEL_0 implements TestInterface {
 
         public ClassB_LOAD_AT_LEVEL_1 callReceiver;
@@ -57,24 +59,32 @@ public class CallStaticBoundVirtualFromOtherLoader extends TestBase {
 
     public static boolean doCall;
 
+    enum TestVariant {
+        C1_WITH_LAZY_LOAD, // Callsite is C1 compiled when the declared/static receiver was not yet loaded -> vanilla virtual call
+        EAGER_LOAD,        // Callsite is C2 compiled when the declared/static receiver was already loaded -> optimized virtual call
+    }
+
+    public TestVariant variant = TestVariant.EAGER_LOAD;
+
     public void runTest(String[] args) throws Throwable {
         int checksum = 0;
         LeveledDirectClassLoader ldl = new LeveledDirectClassLoader(getClass().getClassLoader(), 2);
         TestInterface test = (TestInterface) ldl.newInstance(getClass().getName() + "$ClassA_LOAD_AT_LEVEL_0");
+        if (variant == TestVariant.EAGER_LOAD) {
+            doCall = true;
+            test.setReceiver();
+        }
         for (int i=0; i<30_000; i++) {
             checksum += test.function();
         }
         System.out.println("checksum:" + checksum);
-        waitForEnter("Press Enter load LEVEL_1 class and make statically bound call");
-        doCall = true;
-        test.setReceiver();
-        checksum += test.function();
-        ldl.clearLoaderFromLevel(1);
-        test.clearReceiver();
-//        ldl = null;
-//        test = null;
-        System.gc();
-        System.gc();
-        System.gc();
+        if (variant == TestVariant.C1_WITH_LAZY_LOAD) {
+            waitForEnter("Press Enter load LEVEL_1 class and make statically bound call");
+            doCall = true;
+            test.setReceiver();
+            log("Calling test function");
+            checksum += test.function();
+            log("DONE: Calling test function");
+        }
     }
 }
