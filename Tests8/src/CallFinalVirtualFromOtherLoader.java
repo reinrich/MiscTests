@@ -8,11 +8,11 @@ import java.util.regex.Pattern;
 
 // Scenario: invokevirtual with final target with other classloader
 
-public class CallStaticBoundVirtualFromOtherLoader {
+public class CallFinalVirtualFromOtherLoader {
 
     public static void main(String[] args) {
         try {
-            new CallStaticBoundVirtualFromOtherLoader().runTest(args);
+            new CallFinalVirtualFromOtherLoader().runTest(args);
         } catch (Throwable e) {
             e.printStackTrace();
         }
