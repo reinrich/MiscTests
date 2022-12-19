@@ -57,7 +57,7 @@ public class LeveledDirectClassLoader extends DirectClassLoader {
         }
 
     /**
-     * Define the class with the given name directly and for convenietly
+     * Define the class with the given name directly and for convenience
      * instantiate it using the default constructor.
      */
     public Object newInstance(String className)
