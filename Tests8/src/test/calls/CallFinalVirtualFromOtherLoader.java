@@ -5,11 +5,11 @@ import testlib.TestBase;
 
 // Scenario: invokevirtual with final target with other classloader that isn't an ancestor
 
-public class CallFinalVirtualFromOtherLoaderNEW extends TestBase {
+public class CallFinalVirtualFromOtherLoader extends TestBase {
 
     public static void main(String[] args) {
         try {
-            new CallFinalVirtualFromOtherLoaderNEW().runTest(args);
+            new CallFinalVirtualFromOtherLoader().runTest(args);
         } catch (Throwable e) {
             e.printStackTrace();
         }
