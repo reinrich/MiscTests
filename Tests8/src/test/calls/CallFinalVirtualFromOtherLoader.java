@@ -3,7 +3,7 @@ package test.calls;
 import test.classloading.DirectLeveledClassLoader;
 import testlib.TestBase;
 
-// Scenario: invokevirtual with final target with other classloader that isn't an ancestor
+// Scenario: invokevirtual with final target loaded by child classloader
 
 public class CallFinalVirtualFromOtherLoader extends TestBase {
 
@@ -16,12 +16,12 @@ public class CallFinalVirtualFromOtherLoader extends TestBase {
     }
 
     public static interface TestInterface {
-        public int function() throws Throwable;
+        public int call() throws Throwable;
         public void setReceiver();
         public void clearReceiver();
     }
 
-    // Final callee loaded in non-delegating loader
+    // Final callee loaded by child loader
     public static class ClassB_LVL_2 {
         public final int testMethod_statically_bound_callee_dontinline_dojit() {
             return 0;
@@ -42,7 +42,7 @@ public class CallFinalVirtualFromOtherLoader extends TestBase {
         }
 
         @Override
-        public int function() throws Throwable {
+        public int call() throws Throwable {
             return testMethod_dojit();
         }
 
@@ -78,7 +78,7 @@ public class CallFinalVirtualFromOtherLoader extends TestBase {
             test.setReceiver();
         }
         for (int i=0; i<30_000; i++) {
-            checksum += test.function();
+            checksum += test.call();
         }
         System.out.println("checksum:" + checksum);
         if (variant == TestVariant.C1_WITH_LAZY_LOAD) {
@@ -86,7 +86,7 @@ public class CallFinalVirtualFromOtherLoader extends TestBase {
             doCall = true;
             test.setReceiver();
             log("Calling test function");
-            checksum += test.function();
+            checksum += test.call();
             log("DONE: Calling test function");
         }
     }
