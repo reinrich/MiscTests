@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import test.classloading.DirectClassLoader;
 import test.classloading.FilterClassLoader;
+import test.classloading.LeveledDirectClassLoader;
 import testlib.TestBase;
 
 // Scenario: invokevirtual with final target with other classloader
@@ -75,13 +76,8 @@ public class CallFinalVirtualFromOtherLoaderNEW extends TestBase {
         int checksum = 0;
         ClassLoader thisLoader = getClass().getClassLoader();
         log("CL: " + thisLoader);
-        ClassLoader l2 = new Level2Loader(new Level1Loader(thisLoader));
-        ClassLoader fld = new FilterClassLoader(l2, thisLoader, (name) -> {
-            boolean res = LevelLoaderBase.shouldLoadDirectly(name);
-            log("filter: name: " + name + " -> " + res);
-            return res;
-        });
-        Class<?> cls = fld.loadClass(getClass().getName() + "$ClassA_LVL_1");
+        ClassLoader ldl = new DirectLeveledClassLoader(thisLoader, 2);
+        Class<?> cls = ldl.loadClass(getClass().getName() + "$ClassA_LVL_1");
         TestInterface test = (TestInterface) cls.getDeclaredConstructor().newInstance();
         if (variant == TestVariant.EAGER_LOAD) {
             doCall = true;
@@ -102,36 +98,37 @@ public class CallFinalVirtualFromOtherLoaderNEW extends TestBase {
     }
 
     // A class with a name suffix LVL_N shall be loaded by loader on level N without parent delegation
-    public static class LevelLoaderBase extends DirectClassLoader {
+    public static class DirectLeveledClassLoader extends ClassLoader {
         public static final String CLASS_NAME_SUFFIX = "LVL_";
         public static final Pattern CLASS_PATTERN;
         static {
             CLASS_PATTERN = Pattern.compile(CLASS_NAME_SUFFIX + "(\\d+)");
         }
 
-        private static int maxLevel;
+        private final int maxLevel;
+        private final LevelN bottom;
 
-        public final int level;
-
-        public LevelLoaderBase(ClassLoader parent, int level) {
+        public DirectLeveledClassLoader(ClassLoader parent, int levels) {
             super(parent);
-            this.level = level;
-            if (level == 1) {
-                maxLevel = 1;
-            } else {
-                // Make sure there is a LevelLoader at each level
-                if (!(parent instanceof LevelLoaderBase)) {
-                    throw new Error("Parent must be a LevelLoader subtype if not at bottom: " + parent);
-                }
-                LevelLoaderBase levelParent = (LevelLoaderBase) parent;
-                if (level - 1 != levelParent.level) {
-                    throw new Error("Parent's level must be " + (level - 1) + " but is " + levelParent.level);
-                }
-                maxLevel = level;
+            maxLevel = levels;
+            LevelN bot = null;
+            int level = 1;
+            // Have subclasses for levels 1 and 2 for better tracing
+            if (levels > 0) {
+                level++;
+                bot = new Level1(this);
             }
+            if (levels > 1) {
+                level++;
+                bot = new Level2(bot);
+            }
+            for (int i = 2; i < levels; i++) {
+                bot = new LevelN(bot, level++);
+            }
+            bottom = bot;
         }
 
-        public static boolean shouldLoadDirectly(String name) {
+        public static boolean shouldLoadOnLevel(String name) {
             return getLevelFromName(name) >= 0;
         }
 
@@ -144,43 +141,63 @@ public class CallFinalVirtualFromOtherLoaderNEW extends TestBase {
             return lvl;
         }
 
-        @Override
         protected Class<?> loadClass(String name, boolean resolve)
                 throws ClassNotFoundException {
-            synchronized (getClassLoadingLock(name)) {
-                Class<?> c = findLoadedClass(name);
-                if (c == null) {
-                    String idh = Integer.toHexString(System.identityHashCode(this));
-                    int lvl = getLevelFromName(name);
-                    // System.err.println(this + " loadClass(" + name + ", " + resolve + ") lvl:" + lvl);
-                    if (lvl > maxLevel) {
-                        throw new Error("Level " + lvl + " too deep. maxLevel: " + maxLevel);
-                    }
-                    if (lvl >= 0 && this.level == lvl) {
-                        System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " at level " + lvl + " with " + this);
-                        c = findClass(name);
-                    } else {
-                        System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " from parent");
-                        c = super.loadClass(name, resolve);
-                    }
+            int level = getLevelFromName(name);
+            if (level >= 0) {
+                if (level == 0 || level > maxLevel) {
+                    throw new Error("Level " + level + " is out of bounds [1, " + maxLevel + "]");
                 }
-                if (resolve) {
-                    resolveClass(c);
+                System.err.println(this + ": delegating to bottom level for " + name);
+                return bottom.loadClass(name, resolve);
+            }
+            System.err.println(this + ": delegating to parent for " + name);
+            return super.loadClass(name, resolve);
+        }
+
+        private static class LevelN extends DirectClassLoader {
+            private final int level;
+
+            private LevelN(ClassLoader parent, int level) {
+                super(parent);
+                this.level = level;
+            }
+
+            @Override
+            protected Class<?> loadClass(String name, boolean resolve)
+                    throws ClassNotFoundException {
+                synchronized (getClassLoadingLock(name)) {
+                    Class<?> c = findLoadedClass(name);
+                    if (c == null) {
+                        String idh = Integer.toHexString(System.identityHashCode(this));
+                        int lvl = getLevelFromName(name);
+                        // System.err.println(this + " loadClass(" + name + ", " + resolve + ") lvl:" + lvl);
+                        if (lvl >= 0 && this.level == lvl) {
+                            System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " at level " + lvl);
+                            c = findClass(name);
+                        } else {
+                            System.err.println(this + ": delegating to parent for " + name);
+                            c = super.loadClass(name, resolve);
+                        }
+                    }
+                    if (resolve) {
+                        resolveClass(c);
+                    }
+                    return c;
                 }
-                return c;
             }
         }
-    }
 
-    public static class Level1Loader extends LevelLoaderBase {
-        public Level1Loader(ClassLoader parent) {
-            super(parent, 1);
+        private static class Level1 extends LevelN {
+            private Level1(ClassLoader parent) {
+                super(parent, 1);
+            }
         }
-    }
 
-    public static class Level2Loader extends LevelLoaderBase {
-        public Level2Loader(ClassLoader parent) {
-            super(parent, 2);
+        private static class Level2 extends LevelN {
+            private Level2(ClassLoader parent) {
+                super(parent, 2);
+            }
         }
     }
 }
