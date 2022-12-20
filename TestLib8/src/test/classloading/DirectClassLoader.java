@@ -33,7 +33,7 @@ public class DirectClassLoader extends ClassLoader {
 
                     byte[] b = buffer.toByteArray();
                     c = defineClass(className, b, 0, b.length);
-                    System.out.println("DirectLoader defined class " + className);
+                    System.out.println(this + " defined class " + className);
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw new ClassNotFoundException("Could not define directly '" + className + "'");
