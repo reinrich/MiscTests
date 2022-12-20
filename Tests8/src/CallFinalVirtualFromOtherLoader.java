@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// Scenario: invokevirtual with final target loaded by child classloader
+// invokevirtual with final target loaded by child classloader
 
 public class CallFinalVirtualFromOtherLoader {
 
@@ -20,7 +20,6 @@ public class CallFinalVirtualFromOtherLoader {
     public static interface TestInterface {
         public int call() throws Throwable;
         public void setReceiver();
-        public void clearReceiver();
     }
 
     // Final callee loaded by child loader
@@ -48,21 +47,7 @@ public class CallFinalVirtualFromOtherLoader {
         public void setReceiver() {
             callReceiver = new ClassB_LVL_2();
         }
-
-        @Override
-        public void clearReceiver() {
-            callReceiver = null;
-        }
     }
-
-    public static boolean doCall;
-
-    enum TestVariant {
-        C1_WITH_LAZY_LOAD, // Callsite is C1 compiled when the declared/static receiver was not yet loaded -> vanilla virtual call
-        EAGER_LOAD,        // Callsite is C2 compiled when the declared/static receiver was already loaded -> optimized virtual call
-    }
-
-    public TestVariant variant = TestVariant.EAGER_LOAD;
 
     public void runTest(String[] args) throws Throwable {
         int checksum = 0;
@@ -71,22 +56,11 @@ public class CallFinalVirtualFromOtherLoader {
         ClassLoader ldl = new DirectLeveledClassLoader(thisLoader, 2);
         Class<?> cls = ldl.loadClass(getClass().getName() + "$ClassA_LVL_1");
         TestInterface test = (TestInterface) cls.getDeclaredConstructor().newInstance();
-        if (variant == TestVariant.EAGER_LOAD) {
-            doCall = true;
-            test.setReceiver();
-        }
+        test.setReceiver();
         for (int i=0; i<30_000; i++) {
             checksum += test.call();
         }
         System.out.println("checksum:" + checksum);
-        if (variant == TestVariant.C1_WITH_LAZY_LOAD) {
-            waitForEnter("Press Enter load LEVEL_1 class and make statically bound call");
-            doCall = true;
-            test.setReceiver();
-            log("Calling test function");
-            checksum += test.call();
-            log("DONE: Calling test function");
-        }
     }
 
     /**
