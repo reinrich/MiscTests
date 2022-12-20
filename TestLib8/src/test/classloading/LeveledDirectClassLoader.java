@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Build a hierarchy of classloader L0 ... Ln.
+ * Build a chain of classloader L0 ... Ln.
  * If a class to be loaded has the name suffix LOAD_AT_LEVEL_m, then
  * it will be loaded by Lm (0 <= m <= n).
  */
