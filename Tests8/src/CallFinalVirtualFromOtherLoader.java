@@ -1,12 +1,11 @@
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// Scenario: invokevirtual with final target with other classloader
+// Scenario: invokevirtual with final target loaded by child classloader
 
 public class CallFinalVirtualFromOtherLoader {
 
@@ -19,39 +18,35 @@ public class CallFinalVirtualFromOtherLoader {
     }
 
     public static interface TestInterface {
-        public int function() throws Throwable;
+        public int call() throws Throwable;
         public void setReceiver();
         public void clearReceiver();
     }
 
-    // Final callee loaded in non-delegating loader
-    public static class ClassB_LOAD_AT_LEVEL_1 {
+    // Final callee loaded by child loader
+    public static class ClassB_LVL_2 {
         public final int testMethod_statically_bound_callee_dontinline_dojit() {
             return 0;
         }
     }
 
     // Caller
-    public static class ClassA_LOAD_AT_LEVEL_0 implements TestInterface {
+    public static class ClassA_LVL_1 implements TestInterface {
 
-        public ClassB_LOAD_AT_LEVEL_1 callReceiver;
+        public ClassB_LVL_2 callReceiver;
 
         public int testMethod_dojit() throws Throwable {
-            int res = 0;
-            if (doCall) {
-                callReceiver.testMethod_statically_bound_callee_dontinline_dojit();
-            }
-            return res;
+            return callReceiver.testMethod_statically_bound_callee_dontinline_dojit();
         }
 
         @Override
-        public int function() throws Throwable {
+        public int call() throws Throwable {
             return testMethod_dojit();
         }
 
         @Override
         public void setReceiver() {
-            callReceiver = new ClassB_LOAD_AT_LEVEL_1();
+            callReceiver = new ClassB_LVL_2();
         }
 
         @Override
@@ -71,14 +66,17 @@ public class CallFinalVirtualFromOtherLoader {
 
     public void runTest(String[] args) throws Throwable {
         int checksum = 0;
-        LeveledDirectClassLoader ldl = new LeveledDirectClassLoader(getClass().getClassLoader(), 2);
-        TestInterface test = (TestInterface) ldl.newInstance(getClass().getName() + "$ClassA_LOAD_AT_LEVEL_0");
+        ClassLoader thisLoader = getClass().getClassLoader();
+        log("CL: " + thisLoader);
+        ClassLoader ldl = new DirectLeveledClassLoader(thisLoader, 2);
+        Class<?> cls = ldl.loadClass(getClass().getName() + "$ClassA_LVL_1");
+        TestInterface test = (TestInterface) cls.getDeclaredConstructor().newInstance();
         if (variant == TestVariant.EAGER_LOAD) {
             doCall = true;
             test.setReceiver();
         }
         for (int i=0; i<30_000; i++) {
-            checksum += test.function();
+            checksum += test.call();
         }
         System.out.println("checksum:" + checksum);
         if (variant == TestVariant.C1_WITH_LAZY_LOAD) {
@@ -86,28 +84,119 @@ public class CallFinalVirtualFromOtherLoader {
             doCall = true;
             test.setReceiver();
             log("Calling test function");
-            checksum += test.function();
+            checksum += test.call();
             log("DONE: Calling test function");
         }
     }
 
-    public static void log(String msg) {
-        System.out.println(msg);
-    }
-
-    public static void waitForEnter() {
-        try {
-            do {
-                System.in.read();
-            } while (System.in.available() > 0);
-        } catch (Throwable ex) {
-            ex.printStackTrace();
+    /**
+     * Build a chain of classloaders L0 ... Ln.
+     * Lm will not delegate to its parent if a class to be loaded has the name
+     * suffix LVL_m. Instead it will define the class directly except L0 which
+     * delegates to Ln in that case.
+     * {@link DirectLeveledClassLoader} corresponds to L0.
+     * {@link LevelN} corresponds to others.
+     *
+     */
+    public static class DirectLeveledClassLoader extends ClassLoader {
+        private static final String CLASS_NAME_SUFFIX = "LVL_";
+        private static final Pattern CLASS_PATTERN;
+        static {
+            CLASS_PATTERN = Pattern.compile(CLASS_NAME_SUFFIX + "(\\d+)");
         }
-    }
 
-    public void waitForEnter(String prompt) {
-        log(prompt);
-        waitForEnter();
+        private final int maxLevel;
+        private final LevelN bottom;
+
+        public DirectLeveledClassLoader(ClassLoader parent, int levels) {
+            super(parent);
+            maxLevel = levels;
+            LevelN bot = null;
+            int level = 1;
+            // Have subclasses for levels 1 and 2 for better tracing
+            if (levels > 0) {
+                level++;
+                bot = new Level1(this);
+            }
+            if (levels > 1) {
+                level++;
+                bot = new Level2(bot);
+            }
+            for (int i = 2; i < levels; i++) {
+                bot = new LevelN(bot, level++);
+            }
+            bottom = bot;
+        }
+
+        private static int getLevelFromName(String name) {
+            Matcher m;
+            int lvl = -1;
+            if ((m = CLASS_PATTERN.matcher(name)).find()) {
+                lvl = Integer.parseInt(m.group(1));
+            }
+            return lvl;
+        }
+
+        protected Class<?> loadClass(String name, boolean resolve)
+                throws ClassNotFoundException {
+            int level = getLevelFromName(name);
+            if (level >= 0) {
+                if (level == 0 || level > maxLevel) {
+                    throw new Error("Level " + level + " is out of bounds [1, " + maxLevel + "]");
+                }
+                System.err.println(this + ": delegating to bottom level for " + name);
+                return bottom.loadClass(name, resolve);
+            }
+            System.err.println(this + ": delegating to parent for " + name);
+            return super.loadClass(name, resolve);
+        }
+
+        private static class LevelN extends DirectClassLoader {
+            private final int level;
+
+            private LevelN(ClassLoader parent, int level) {
+                super(parent);
+                this.level = level;
+            }
+
+            @Override
+            protected Class<?> loadClass(String name, boolean resolve)
+                    throws ClassNotFoundException {
+                synchronized (getClassLoadingLock(name)) {
+                    Class<?> c = findLoadedClass(name);
+                    if (c == null) {
+                        String idh = Integer.toHexString(System.identityHashCode(this));
+                        int lvl = getLevelFromName(name);
+                        // System.err.println(this + " loadClass(" + name + ", " + resolve + ") lvl:" + lvl);
+                        if (lvl >= 0 && this.level == lvl) {
+                            System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " at level " + lvl);
+                            c = findClass(name);
+                        } else {
+                            System.err.println(this + ": delegating to parent for " + name);
+                            c = super.loadClass(name, resolve);
+                        }
+                    }
+                    if (resolve) {
+                        resolveClass(c);
+                    }
+                    return c;
+                }
+            }
+        }
+
+        // Encode level in classname for better tracing
+        private static class Level1 extends LevelN {
+            private Level1(ClassLoader parent) {
+                super(parent, 1);
+            }
+        }
+
+        // Encode level in classname for better tracing
+        private static class Level2 extends LevelN {
+            private Level2(ClassLoader parent) {
+                super(parent, 2);
+            }
+        }
     }
 
     /**
@@ -137,7 +226,7 @@ public class CallFinalVirtualFromOtherLoader {
 
                         byte[] b = buffer.toByteArray();
                         c = defineClass(className, b, 0, b.length);
-                        System.out.println("DirectLoader defined class " + className);
+                        System.out.println(this + " defined class " + className);
                     } catch (IOException e) {
                         e.printStackTrace();
                         throw new ClassNotFoundException("Could not define directly '" + className + "'");
@@ -147,92 +236,27 @@ public class CallFinalVirtualFromOtherLoader {
             }
         }
 
-        /**
-         * Define the class with the given name directly and for convenietly
-         * instantiate it using the default constructor.
-         */
-        public Object newInstance(String className)
-                throws ClassNotFoundException,
-                InstantiationException, IllegalAccessException, IllegalArgumentException,
-                InvocationTargetException, NoSuchMethodException, SecurityException {
-            Class<?> c = findClass(className);
-            return c.getDeclaredConstructor().newInstance();
-        }
-
         public DirectClassLoader(ClassLoader parent) {
             super(parent);
-            System.identityHashCode(this);
         }
     }
 
-    /**
-     * Build a hierarchy of classloader L0 ... Ln.
-     * If a class to be loaded has the name suffix LOAD_AT_LEVEL_m, then
-     * it will be loaded by Lm (0 <= m <= n).
-     */
-    public static class LeveledDirectClassLoader extends DirectClassLoader {
-        public static final String CLASS_NAME_SUFFIX = "LOAD_AT_LEVEL_";
-        public static final Pattern CLASS_PATTERN;
-        static {
-            CLASS_PATTERN = Pattern.compile(CLASS_NAME_SUFFIX + "(\\d+)");
-        }
-        DirectClassLoader classLoaders[];
-        public LeveledDirectClassLoader(ClassLoader parent, int levels) {
-            super(parent);
-            DirectClassLoader[] loaders = new DirectClassLoader[levels];
-            loaders[0] = this;
-            System.err.println("loaders[0] : " + this);
-            for (int i = 1; i < loaders.length; i++) {
-                loaders[i] = new DirectClassLoader(loaders[i - 1]);
-                System.err.println("loaders[" + i +"] : " + loaders[i]);
-            }
-            classLoaders = loaders;
-        }
+    public static void log(String msg) {
+        System.out.println(msg);
+    }
 
-        @Override
-        protected Class<?> loadClass(String name, boolean resolve)
-                throws ClassNotFoundException
-            {
-                synchronized (getClassLoadingLock(name)) {
-                    Class<?> c = findLoadedClass(name);
-                    if (c == null) {
-                        Matcher m;
-                        String idh = Integer.toHexString(System.identityHashCode(this));
-                        if ((m = CLASS_PATTERN.matcher(name)).find()) {
-                            int level = Integer.parseInt(m.group(1));
-                            if (level >= classLoaders.length) {
-                                throw new Error("Level " + level + " too deep");
-                            }
-                            System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " at level " + level + " with " + classLoaders[level]);
-                            c = classLoaders[level].findClass(name);
-                        } else {
-                            System.err.println(getClass().getName() + "@" + idh + ": loading " + name + " from parent");
-                            c = super.loadClass(name, resolve);
-                        }
-                    }
-                    if (resolve) {
-                        resolveClass(c);
-                    }
-                    return c;
-                }
-            }
-
-        /**
-         * Define the class with the given name directly and for convenietly
-         * instantiate it using the default constructor.
-         */
-        public Object newInstance(String className)
-                throws ClassNotFoundException,
-                InstantiationException, IllegalAccessException, IllegalArgumentException,
-                InvocationTargetException, NoSuchMethodException, SecurityException {
-            Class<?> c = loadClass(className);
-            return c.getDeclaredConstructor().newInstance();
+    public static void waitForEnter() {
+        try {
+            do {
+                System.in.read();
+            } while (System.in.available() > 0);
+        } catch (Throwable ex) {
+            ex.printStackTrace();
         }
+    }
 
-        public void clearLoaderFromLevel(int i) {
-            for(; i < classLoaders.length; i++) {
-                classLoaders[i] = null;
-            }
-        }
+    public void waitForEnter(String prompt) {
+        log(prompt);
+        waitForEnter();
     }
 }
