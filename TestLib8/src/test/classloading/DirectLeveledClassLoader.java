@@ -36,6 +36,10 @@ public class DirectLeveledClassLoader extends ClassLoader {
             level++;
             bot = new Level2(bot);
         }
+        if (levels > 1) {
+            level++;
+            bot = new Level3(bot);
+        }
         for (int i = 2; i < levels; i++) {
             bot = new LevelN(bot, level++);
         }
@@ -100,15 +104,14 @@ public class DirectLeveledClassLoader extends ClassLoader {
 
     // Encode level in classname for better tracing
     private static class Level1 extends LevelN {
-        private Level1(ClassLoader parent) {
-            super(parent, 1);
-        }
+        private Level1(ClassLoader parent) { super(parent, 1); }
     }
-
     // Encode level in classname for better tracing
     private static class Level2 extends LevelN {
-        private Level2(ClassLoader parent) {
-            super(parent, 2);
-        }
+        private Level2(ClassLoader parent) { super(parent, 2); }
+    }
+    // Encode level in classname for better tracing
+    private static class Level3 extends LevelN {
+        private Level3(ClassLoader parent) { super(parent, 3); }
     }
 }
