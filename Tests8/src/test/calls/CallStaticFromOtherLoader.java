@@ -18,16 +18,16 @@ public class CallStaticFromOtherLoader extends TestBase {
     }
 
     // Static Callee
-    public static class ClassB_LOAD_AT_LEVEL_1 {
+    public static class ClassB_LVL_1 {
         public static int testMethod_static_callee_dontinline() {
             return 0;
         }
     }
 
     // Static Caller
-    public static class ClassA_LOAD_AT_LEVEL_0 implements IntFunction {
+    public static class ClassA_LVL_0 implements IntFunction {
         public int testMethod_dojit() throws Throwable {
-            return ClassB_LOAD_AT_LEVEL_1.testMethod_static_callee_dontinline();
+            return ClassB_LVL_1.testMethod_static_callee_dontinline();
         }
 
         @Override
@@ -39,7 +39,7 @@ public class CallStaticFromOtherLoader extends TestBase {
     public void runTest(String[] args) throws Throwable {
         int checksum = 0;
         LeveledDirectClassLoader ldl = new LeveledDirectClassLoader(getClass().getClassLoader(), 2);
-        IntFunction f = (IntFunction) ldl.newInstance(getClass().getName() + "$ClassA_LOAD_AT_LEVEL_0");
+        IntFunction f = (IntFunction) ldl.newInstance(getClass().getName() + "$ClassA_LVL_0");
         for (int i=0; i<30_000; i++) {
             checksum += f.function();
         }
