@@ -13,7 +13,7 @@ public class CallMonomorphicConcreteDeclaredReceiver extends TestBase {
 
     public static class DeclaredReceiver {
 
-        public int testMethod_callee() {
+        public int dontinline_testMethod_callee() {
             return 0;
         }
 
@@ -24,16 +24,12 @@ public class CallMonomorphicConcreteDeclaredReceiver extends TestBase {
         DeclaredReceiver recv = new DeclaredReceiver();
         int checksum = 0;
         for (int i=0; i<30_000; i++) {
-            checksum += testMethod_dojit(recv);
+            checksum += dontinline_testMethod_dojit(recv);
         }
         System.out.println("checksum:" + checksum);
-        waitForEnter("Press Enter to start GC Load");
-        for (int i=0; i<30_000; i++) {
-            checksum += testMethod_dojit(recv);
-        }
     }
 
-    public static int testMethod_dojit(DeclaredReceiver receiver) {
-        return receiver.testMethod_callee();
+    public static int dontinline_testMethod_dojit(DeclaredReceiver receiver) {
+        return receiver.dontinline_testMethod_callee();
     }
 }
