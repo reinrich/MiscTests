@@ -10,11 +10,19 @@ public class CheckCastTests {
         // empty
     }
 
-    public static class Sub1WithoutB implements InterfaceA, /*InterfaceB,*/ InterfaceC {
+    public static class Sub2 implements InterfaceA, InterfaceB, InterfaceC {
         // empty
     }
 
-    public static class Sub2 extends Sub1 {
+    public static class Sub3 implements InterfaceA, InterfaceB, InterfaceC {
+        // empty
+    }
+
+    public static class Sub4 implements InterfaceA, InterfaceB, InterfaceC {
+        // empty
+    }
+
+    public static class Sub1WithoutB implements InterfaceA, /*InterfaceB,*/ InterfaceC {
         // empty
     }
 
@@ -31,8 +39,14 @@ public class CheckCastTests {
     public static void dontjit_callTestMethod_1() {
         Object obj  = new Object();
         Object obj1 = new Sub1();
+        Object obj2 = new Sub2();
+        Object obj3 = new Sub3();
+        Object obj4 = new Sub4();
         for(int i = 0; i < 10_000; i++) {
             dojit_testMethod_1(obj1);
+            dojit_testMethod_1(obj2);
+            dojit_testMethod_1(obj3);
+            dojit_testMethod_1(obj4);
         }
         System.err.println("### warm-up done");
         dummy = (InterfaceA)obj1;   // kills _secondary_super_cache
