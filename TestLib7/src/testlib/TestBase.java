@@ -5,7 +5,7 @@ import java.util.Scanner;
 import sun.misc.Unsafe;
 
 @SuppressWarnings("restriction")
-public class TestBase implements Tracer {
+public abstract class TestBase implements Tracer {
 
     public static final int K = 1<<10;
     public static final int M = 1<<20;
@@ -165,4 +165,6 @@ public class TestBase implements Tracer {
 
         return(objectAddress);
     }
+
+    public abstract void runTest();
 }
