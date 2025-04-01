@@ -5,11 +5,12 @@ import testlib.TestBase;
 public class CallStatic extends TestBase {
 
     public static void main(String[] args) {
-        new CallStatic().runTest(args);
+        new CallStatic().runTest();
     }
 
     public byte[] dummy;
-    public void runTest(String[] args) {
+    @Override
+    public void runTest() {
         int checksum = 0;
         for (int i=0; i<30_000; i++) {
             checksum += testMethod_dojit();
