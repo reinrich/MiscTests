@@ -11,7 +11,7 @@ import testlib.TestBase;
 // deoptimization of thenmethod, because it has not turned megamorphic. But when the target of the
 // call is an nmethod, we would catch that in the nmethod entry barrier, and when the target is interpreted,
 // we would either observe the old Method*, and catch that it's dead in the c2i adapter, or observe
-// the NULL, in which case we catch that also in the c2i adapter, triggering re-resolution of the call. 
+// the NULL, in which case we catch that also in the c2i adapter, triggering re-resolution of the call.
 
 
 public class EriksTest extends TestBase {
