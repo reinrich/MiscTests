@@ -166,5 +166,7 @@ public abstract class TestBase implements Tracer {
         return(objectAddress);
     }
 
-    public abstract void runTest();
+    public void runTest() {
+        throw new Error("Subclass should override the runTest method");
+    }
 }

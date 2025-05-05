@@ -31,6 +31,7 @@ public class CallMonomorphicAbstractDeclaredReceiverSingleConcreteReceiverWithUn
         }
     }
 
+    @Override
     public void runTest() {
         try {
             runTest(getClass().getName() + "$ConcreteReceiverR1");

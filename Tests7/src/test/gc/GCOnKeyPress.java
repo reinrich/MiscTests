@@ -37,6 +37,7 @@ public class GCOnKeyPress extends TestBase {
         this.opts = gcOpts;
     }
 
+    @Override
     public void runTest() {
         log("Running with the following options: ");
         opts.printOn(this);

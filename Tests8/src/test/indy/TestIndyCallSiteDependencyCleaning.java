@@ -59,6 +59,7 @@ public class TestIndyCallSiteDependencyCleaning extends TestBase {
         }
     }
 
+    @Override
     public void runTest() {
         try {
             // setup

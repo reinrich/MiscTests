@@ -20,6 +20,7 @@ public class EriksTest extends TestBase {
         new EriksTest().runTest();
     }
 
+    @Override
     public void runTest() {
         try {
             runTest(getClass().getName() + "$ClassC_WithSingleConcrete");

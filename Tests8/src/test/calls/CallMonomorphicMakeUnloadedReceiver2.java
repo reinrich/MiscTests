@@ -28,6 +28,7 @@ public class CallMonomorphicMakeUnloadedReceiver2 extends TestBase {
         }
     }
 
+    @Override
     public void runTest() {
         try {
             runTest(getClass().getName() + "$ConcreteReceiverR1");
