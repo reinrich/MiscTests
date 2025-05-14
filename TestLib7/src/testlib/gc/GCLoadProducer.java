@@ -40,6 +40,8 @@ public class GCLoadProducer extends TestBase implements Runnable {
 
     @Override
     public void run() {
+        log("Running with the following options: ");
+        opts.printOn(this);
         shouldContinueToAllocate = true;
         buildUpObjectGraph();
         signalReady2Go();
