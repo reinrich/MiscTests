@@ -3,13 +3,14 @@ package testlib.gc;
 import testlib.Tracer;
 
 public class TestGCOptions {
-    
+
     public static final int K = 1<<10;
     public static final int M = 1<<20;
 
     public enum TestType {
         NONE,
         CMS_ON_LU0486,
+        G1_ON_BDW214,
         G1_ON_LU0486,
         G1_ON_LU0486_MORE_FULL_GCS,
         PARGC_ON_LU0486,
@@ -83,6 +84,9 @@ public class TestGCOptions {
         switch(tt) {
         case CMS_ON_LU0486:
             initForCmsOnLu0486(this);
+            break;
+        case G1_ON_BDW214:
+            initForG1OnBdw214(this);
             break;
         case G1_ON_LU0486:
             initForG1OnLu0486(this);
@@ -189,6 +193,23 @@ public class TestGCOptions {
     public void printOn(Tracer tracer) {
         tracer.log("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
         tracer.trcInstanceFields(this);
+    }
+
+    public static void initForG1OnBdw214(TestGCOptions gcOpts) {
+        gcOpts.trc_level = 3;
+        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
+        gcOpts.immortal_obj_heap_occupancy = 0.15f;
+        gcOpts.immortal_obj_size_bytes = 1*K;
+        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
+        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
+        gcOpts.mortal_obj_heap_occupancy = 0.15f;
+        gcOpts.mortal_obj_size_bytes = 256;
+        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
+        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
+        gcOpts.alloc_percentage_immortal = 20;
+        gcOpts.alloc_percentage_mortal   = 10;
+        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
+        gcOpts.busy_wait_iterations = 1000;
     }
 
     public static void initForG1OnLu0486(TestGCOptions gcOpts) {
