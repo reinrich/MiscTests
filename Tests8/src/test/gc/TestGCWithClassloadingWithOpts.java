@@ -40,9 +40,30 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
 
         // Read test types
         TestType tt = TestType.valueOf(args[0]);
-        MSTestType mstt   = args.length >= 1 ? MSTestType.valueOf(args[1]) : MSTestType.MS_NONE;
-        HumTestType humtt = args.length >= 2 ? HumTestType.valueOf(args[2]) : HumTestType.HUM_NONE;
-        RefTestType reftt     = args.length >= 3 ? RefTestType.valueOf(args[3]) : RefTestType.REF_NONE;
+        MSTestType mstt   = MSTestType.MS_NONE;
+        HumTestType humtt = HumTestType.HUM_NONE;
+        RefTestType reftt = RefTestType.REF_NONE;
+
+        for (int i = 1; i < args.length; i++) {
+            try {
+                mstt = MSTestType.valueOf(args[i]);
+                continue;
+            } catch (IllegalArgumentException e) { /* ignored */}
+            try {
+                humtt = HumTestType.valueOf(args[i]);
+                continue;
+            } catch (IllegalArgumentException e) { /* ignored */}
+            try {
+                reftt = RefTestType.valueOf(args[i]);
+                continue;
+            } catch (IllegalArgumentException e) { /* ignored */}
+        }
+        System.out.println("Using the following test types:");
+        System.out.println("    " + tt);
+        System.out.println("    " + mstt);
+        System.out.println("    " + humtt);
+        System.out.println("    " + reftt);
+        System.out.println();
 
         // MetaSpace load
         if (mstt != MSTestType.MS_NONE) {
@@ -67,10 +88,15 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
 
     private static void printUsageAndExit() {
         System.err.println();
-        System.err.println("Usage: " + TestGCWithClassloadingWithOpts.class + " TestType [MSTestType] [HumTestType] [j.l.r.ReferenceType]");
+        System.err.println("Usage: " + TestGCWithClassloadingWithOpts.class + " TestType [AuxTestType ...]");
         System.err.println();
         System.err.println("   TestType := ");
         for (TestType tt : TestType.values()) {
+            System.err.println("      " + tt);
+        }
+        System.err.println();
+        System.err.println("   AuxTestType := MSTestType | HumTestType | j.l.r.ReferenceType ");
+        for (MSTestType tt : MSTestType.values()) {
             System.err.println("      " + tt);
         }
         System.err.println();
