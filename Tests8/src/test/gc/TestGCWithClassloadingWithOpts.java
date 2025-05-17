@@ -57,6 +57,10 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
                 reftt = RefTestType.valueOf(args[i]);
                 continue;
             } catch (IllegalArgumentException e) { /* ignored */}
+
+            // Must be the name of a LoadProducer class
+            startLoadProducer(args[i], ((i + 1) < args.length) ? args[i + 1] : null);
+            i++;
         }
         System.out.println("Using the following test types:");
         System.out.println("    " + tt);
@@ -84,6 +88,16 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
         // Java heap load
         TestGCOptions exOpts = new TestGCOptions(tt, humtt);
         new GCLoadProducer(exOpts).run();
+    }
+
+    static void startLoadProducer(String className, String args) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            LoadProducer loadProducer = (LoadProducer) clazz.getDeclaredConstructor().newInstance();
+            loadProducer.runInBackground(args);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     private static void printUsageAndExit() {
