@@ -1,5 +1,7 @@
 package test.gc;
 
+import java.lang.reflect.Constructor;
+
 import testlib.TestBase;
 import testlib.gc.GCLoadProducer;
 import testlib.gc.MetaSpaceLoadProducerOptions;
@@ -32,6 +34,8 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
 
     private static ReferenceProcessorLoadProducer rpLoadProducer;
 
+    private static LoadProducer loadProducer;
+
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Error: unexpected number of commandline arguments: " + args.length);
@@ -57,6 +61,10 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
                 reftt = RefTestType.valueOf(args[i]);
                 continue;
             } catch (IllegalArgumentException e) { /* ignored */}
+
+            // Must be the name of a LoadProducer class
+            createLoadProducer(args[i], ((i + 1) < args.length) ? args[i + 1] : null);
+            i++;
         }
         System.out.println("Using the following test types:");
         System.out.println("    " + tt);
@@ -83,7 +91,22 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
 
         // Java heap load
         TestGCOptions exOpts = new TestGCOptions(tt, humtt);
-        new GCLoadProducer(exOpts).run();
+        new GCLoadProducer(exOpts, () -> finishedObjectGraphBuildupCallback()).run();
+    }
+
+    private static void finishedObjectGraphBuildupCallback() {
+        if (loadProducer == null) return;
+        loadProducer.runInBackground();
+    }
+
+    static void createLoadProducer(String className, String args) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            Constructor<?> constructor = clazz.getConstructor(String.class);
+            loadProducer = (LoadProducer) constructor.newInstance(args);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     private static void printUsageAndExit() {

@@ -1,6 +1,7 @@
 package testlib.gc;
 
 import testlib.tools.NestedArrayList;
+
 import testlib.TestBase;
 
 //
@@ -31,10 +32,12 @@ public class GCLoadProducer extends TestBase implements Runnable {
 
     private boolean ready2go;
     private Thread backGroundThread;
+    private Runnable objectGraphCompleteCallback;
 
-    public GCLoadProducer(TestGCOptions opts) {
+    public GCLoadProducer(TestGCOptions opts, Runnable objectGraphCompleteCallback) {
         super(opts.trc_level);
         this.opts = opts;
+        this.objectGraphCompleteCallback = objectGraphCompleteCallback;
         heap = new JavaHeap(this);
     }
 
@@ -98,6 +101,8 @@ public class GCLoadProducer extends TestBase implements Runnable {
         log(heap);
         logDecInd();
         log();
+        log("###### Running objectGraphCompleteCallback");
+        objectGraphCompleteCallback.run();
     }
 
     private void continouslyAllocateObjects() {
