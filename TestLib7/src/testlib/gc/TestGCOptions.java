@@ -53,10 +53,11 @@ public class TestGCOptions {
     public long busy_wait_iterations = 0;
 
     public TestGCOptions() {
-        initOpts(this);
+        initOptsWithDflts(this);
     }
 
     public TestGCOptions(TestType tt, HumTestType humtt) {
+        initOptsWithDflts(this);
         long g1_region_size = JavaHeap.MAX_JAVA_HEAP_BYTES / 2048;
         hum_obj_size_bytes = (int) g1_region_size;
         switch(humtt) {
@@ -105,128 +106,74 @@ public class TestGCOptions {
         }
     }
 
+    public static void init_immortal_derived_settings(TestGCOptions gcOpts) {
+        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
+        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
+    }
+
+    public static void init_mortal_derived_settings(TestGCOptions gcOpts) {
+        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
+        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
+    }
+
+    public static void init_derived_settings_final(TestGCOptions gcOpts) {
+        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
+        gcOpts.busy_wait_iterations = getProperty("gcOpts.busy_wait_iterations", 1000);
+    }
+
     // copy and adapt as needed
-    public static void initOpts(TestGCOptions gcOpts) {
+    public static void initOptsWithDflts(TestGCOptions gcOpts) {
         gcOpts.trc_level = 3;
         gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
         gcOpts.immortal_obj_heap_occupancy = 0.15f;
         gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
+        init_immortal_derived_settings(gcOpts);
         gcOpts.mortal_obj_heap_occupancy = 0.15f;
         gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = 20;
-        gcOpts.alloc_percentage_mortal   = 10;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
+        init_mortal_derived_settings(gcOpts);
+        gcOpts.alloc_percentage_immortal = (int)getProperty("gcOpts.alloc_percentage_immortal", 20);
+        gcOpts.alloc_percentage_mortal   = (int)getProperty("gcOpts.alloc_percentage_mortal",   10);;
+        init_derived_settings_final(gcOpts);
     }
 
     public static void initForCmsOnLu0486(TestGCOptions gcOpts) {
-        gcOpts.trc_level = 3;
-        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
-        gcOpts.immortal_obj_heap_occupancy = 0.15f;
-        gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
-        gcOpts.mortal_obj_heap_occupancy = 0.15f;
-        gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = 20;
-        gcOpts.alloc_percentage_mortal   = 10;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
-        gcOpts.busy_wait_iterations = 1000;
+        // use dflt settings
     }
 
     public static void initForParGCOnLu0486(TestGCOptions gcOpts) {
-        gcOpts.trc_level = 3;
-        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
-        gcOpts.immortal_obj_heap_occupancy = 0.15f;
-        gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
-        gcOpts.mortal_obj_heap_occupancy = 0.15f;
-        gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = 20;
-        gcOpts.alloc_percentage_mortal   = 10;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
-        gcOpts.busy_wait_iterations = 1000;
+        // use dflt settings
     }
 
     public static void initForParGCOnLu0486Gerrit(TestGCOptions gcOpts) {
-        gcOpts.trc_level = 3;
-        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
         gcOpts.immortal_obj_heap_occupancy = 0.10f;
-        gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
-        gcOpts.mortal_obj_heap_occupancy = 0.15f;
-        gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = 20;
-        gcOpts.alloc_percentage_mortal   = 10;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
-        gcOpts.busy_wait_iterations = 1000;
+        init_immortal_derived_settings(gcOpts);
+        init_derived_settings_final(gcOpts);
     }
 
     public static void initForG1OnLu0486MoreFullGCs(TestGCOptions gcOpts) {
-        gcOpts.trc_level = 3;
-        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
         gcOpts.immortal_obj_heap_occupancy = 0.4f;
-        gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
+        init_immortal_derived_settings(gcOpts);
         gcOpts.mortal_obj_heap_occupancy = 0.3f;
-        gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = 20;
-        gcOpts.alloc_percentage_mortal   = 50;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
+        init_mortal_derived_settings(gcOpts);
+        gcOpts.alloc_percentage_immortal = (int)getProperty("gcOpts.alloc_percentage_immortal", 20);
+        gcOpts.alloc_percentage_mortal   = (int)getProperty("gcOpts.alloc_percentage_mortal",   50);;
+        init_derived_settings_final(gcOpts);
         gcOpts.busy_wait_iterations = 1;
+    }
+
+    public static void initForG1OnBdw214(TestGCOptions gcOpts) {
+        gcOpts.immortal_obj_heap_occupancy = getProperty("gcOpts.immortal_obj_heap_occupancy", 0.15f);
+        init_immortal_derived_settings(gcOpts);
+        init_derived_settings_final(gcOpts);
+    }
+
+    public static void initForG1OnLu0486(TestGCOptions gcOpts) {
+        // use dflt settings
     }
 
     public void printOn(Tracer tracer) {
         tracer.log("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
         tracer.trcInstanceFields(this);
-    }
-
-    public static void initForG1OnBdw214(TestGCOptions gcOpts) {
-        gcOpts.trc_level = 3;
-        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
-        gcOpts.immortal_obj_heap_occupancy = getProperty("gcOpts.immortal_obj_heap_occupancy", 0.15f);
-        gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
-        gcOpts.mortal_obj_heap_occupancy = 0.15f;
-        gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = (int)getProperty("gcOpts.alloc_percentage_immortal", 10);
-        gcOpts.alloc_percentage_mortal   = (int)getProperty("gcOpts.alloc_percentage_mortal", 2);;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
-        gcOpts.busy_wait_iterations = getProperty("gcOpts.busy_wait_iterations", 1000);
-    }
-
-    public static void initForG1OnLu0486(TestGCOptions gcOpts) {
-        gcOpts.trc_level = 3;
-        gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
-        gcOpts.immortal_obj_heap_occupancy = 0.15f;
-        gcOpts.immortal_obj_size_bytes = 1*K;
-        gcOpts.immortal_obj_heap_occupancy_bytes = (long) (gcOpts.immortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.immortal_obj_count = gcOpts.immortal_obj_heap_occupancy_bytes / gcOpts.immortal_obj_size_bytes;
-        gcOpts.mortal_obj_heap_occupancy = 0.15f;
-        gcOpts.mortal_obj_size_bytes = 256;
-        gcOpts.mortal_obj_heap_occupancy_bytes = (long) (gcOpts.mortal_obj_heap_occupancy * JavaHeap.MAX_JAVA_HEAP_BYTES);
-        gcOpts.mortal_obj_count = gcOpts.mortal_obj_heap_occupancy_bytes / gcOpts.mortal_obj_size_bytes;
-        gcOpts.alloc_percentage_immortal = 20;
-        gcOpts.alloc_percentage_mortal   = 10;
-        gcOpts.alloc_percentage_short_lived = 100-(gcOpts.alloc_percentage_immortal+gcOpts.alloc_percentage_mortal);
-        gcOpts.busy_wait_iterations = 1000;
     }
 
     static long getProperty(String testProp, long dflt) {
