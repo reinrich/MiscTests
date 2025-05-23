@@ -9,7 +9,7 @@ public class TestGCOptions {
 
     public enum TestType {
         NONE,
-        CMS_ON_LU0486,
+        CMS_ON_CLX209,
         G1_ON_BDW214,
         G1_ON_LU0486,
         G1_ON_LU0486_MORE_FULL_GCS,
@@ -83,8 +83,8 @@ public class TestGCOptions {
         hum_obj_count = hum_obj_heap_occupancy_bytes / hum_obj_size_bytes;
 
         switch(tt) {
-        case CMS_ON_LU0486:
-            initForCmsOnLu0486(this);
+        case CMS_ON_CLX209:
+            initForCmsOn_clx209(this);
             break;
         case G1_ON_BDW214:
             initForG1OnBdw214(this);
@@ -136,7 +136,7 @@ public class TestGCOptions {
         init_derived_settings_final(gcOpts);
     }
 
-    public static void initForCmsOnLu0486(TestGCOptions gcOpts) {
+    public static void initForCmsOn_clx209(TestGCOptions gcOpts) {
         // use dflt settings
     }
 
