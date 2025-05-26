@@ -10,6 +10,7 @@ public class TestGCOptions {
     public enum TestType {
         NONE,
         CMS_ON_CLX209,
+        CMS_ON_BDW214,
         G1_ON_BDW214,
         G1_ON_LU0486,
         G1_ON_LU0486_MORE_FULL_GCS,
@@ -86,6 +87,9 @@ public class TestGCOptions {
         case CMS_ON_CLX209:
             initForCmsOn_clx209(this);
             break;
+        case CMS_ON_BDW214:
+            initForCmsOn_bdw214(this);
+            break;
         case G1_ON_BDW214:
             initForG1OnBdw214(this);
             break;
@@ -137,6 +141,10 @@ public class TestGCOptions {
     }
 
     public static void initForCmsOn_clx209(TestGCOptions gcOpts) {
+        // use dflt settings
+    }
+
+    public static void initForCmsOn_bdw214(TestGCOptions gcOpts) {
         // use dflt settings
     }
 
