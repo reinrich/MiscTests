@@ -96,13 +96,21 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
     }
 
     static void createLoadProducer(String className, String args) {
-        try {
-            Class<?> clazz = Class.forName(className);
-            Constructor<?> constructor = clazz.getConstructor(String.class);
-            loadProducer = (LoadProducer) constructor.newInstance(args);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        boolean retried = false;
+        do {
+            try {
+                Class<?> clazz = Class.forName(className);
+                Constructor<?> constructor = clazz.getConstructor(String.class);
+                loadProducer = (LoadProducer) constructor.newInstance(args);
+            } catch (Throwable t) {
+                if (retried) {
+                    throw new Error (t);
+                }
+                retried = true;
+                className = "test.gc." + className;
+                System.out.println("Retrying with package prepended: " + className);
+            }
+        } while(loadProducer == null);
     }
 
     private static void printUsageAndExit() {
