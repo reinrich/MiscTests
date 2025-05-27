@@ -9,7 +9,7 @@ public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
     private int listLength;
     private int pauseMs;
     private LinkedBlockingQueue<PayLoad> queue;
-    public static Thread daemon;
+    public static Thread producerThread;
 
     static class PayLoad {
         public long l;
@@ -46,15 +46,39 @@ public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
         log("    " + pauseMs + " ms pause per iteration");
     }
 
+    public class Consumer implements Runnable {
+        @Override
+        public void run() {
+            log("###### Started Consumer");
+            LinkedBlockingQueue<PayLoad> q = queue;
+            while (true) {
+                q.poll();
+                if (pauseMs > 0) {
+                    try {
+                        Thread.sleep(pauseMs);
+                    } catch (InterruptedException e) { /* ignore */ }
+                }
+            }
+        }
+    }
+
     @Override
     public void run() {
-        log("###### Starting " + getClass().getName());
+        log("###### Started Producer");
         queue = new LinkedBlockingQueue<PayLoad>();
 
+        // Fill queue
+        while (queue.size() < listLength) {
+            queue.add(new PayLoad());
+        }
+
+        // Start consumer thread
+        Thread consumer = new Thread(new Consumer(), "LPLinkedBlockingQueueThread Consumer");
+        consumer.start();
+
+        // Continuously add more items in queue
         while (true) {
             queue.add(new PayLoad());
-            if (queue.size() < listLength) continue;
-            queue.poll();
             if (pauseMs > 0) {
                 try {
                     Thread.sleep(pauseMs);
@@ -65,7 +89,7 @@ public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
 
     @Override
     public void runInBackground() {
-        daemon = new Thread(this, "LPLinkedBlockingQueueThread");
-        daemon.start();
+        producerThread = new Thread(this, "LPLinkedBlockingQueueThread Producer");
+        producerThread.start();
     }
 }
