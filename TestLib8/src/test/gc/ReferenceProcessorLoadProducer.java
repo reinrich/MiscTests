@@ -5,7 +5,6 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 
 import testlib.TestBase;
-import testlib.gc.ReferenceProcessorLoadProducerOptions;
 
 //
 // Produce load for the reference processor

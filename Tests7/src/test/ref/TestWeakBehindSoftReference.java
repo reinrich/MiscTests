@@ -6,8 +6,8 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 
 import testlib.TestBase;
-import testlib.gc.GCLoadProducer;
-import testlib.gc.TestGCOptions;
+import test.gc.GCLoadProducer;
+import test.gc.TestGCOptions;
 import test.gc.TestGCWithOpts;
 
 public class TestWeakBehindSoftReference extends TestBase {

@@ -4,8 +4,6 @@ import testlib.tools.NestedArrayList;
 import test.classloading.ClassGenerator;
 import test.classloading.SimpleClassLoader;
 import testlib.TestBase;
-import testlib.gc.JavaHeap;
-import testlib.gc.MetaSpaceLoadProducerOptions;
 
 //
 // Continuously allocates the following type of class loaders, which in turn load classes:

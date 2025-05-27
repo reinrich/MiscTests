@@ -5,8 +5,6 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
 import testlib.TestBase;
-import testlib.gc.GCLoadProducer;
-import testlib.gc.TestGCOptions;
 
 public class TestCMSDeficiency2DeadObjsNotFoundDead extends TestBase {
 

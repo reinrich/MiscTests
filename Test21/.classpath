@@ -7,6 +7,5 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/TestLib8"/>
-	<classpathentry kind="src" path="/TestLib7"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,4 +1,4 @@
-package testlib.gc;
+package test.gc;
 
 import testlib.Tracer;
 

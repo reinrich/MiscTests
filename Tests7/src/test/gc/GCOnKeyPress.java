@@ -1,9 +1,6 @@
 package test.gc;
 
 import testlib.TestBase;
-import testlib.gc.GCLoadProducer;
-import testlib.gc.JavaHeap;
-import testlib.gc.TestGCOptions;
 
 public class GCOnKeyPress extends TestBase {
 

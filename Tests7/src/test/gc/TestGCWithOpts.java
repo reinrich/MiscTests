@@ -1,9 +1,7 @@
 package test.gc;
 
+import test.gc.TestGCOptions.TestType;
 import testlib.TestBase;
-import testlib.gc.GCLoadProducer;
-import testlib.gc.TestGCOptions;
-import testlib.gc.TestGCOptions.TestType;
 
 //
 // Test Description

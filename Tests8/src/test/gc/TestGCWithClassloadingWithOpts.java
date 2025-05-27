@@ -2,15 +2,11 @@ package test.gc;
 
 import java.lang.reflect.Constructor;
 
-import testlib.TestBase;
-import testlib.gc.GCLoadProducer;
-import testlib.gc.MetaSpaceLoadProducerOptions;
-import testlib.gc.TestGCOptions;
-import testlib.gc.MetaSpaceLoadProducerOptions.MSTestType;
-import testlib.gc.ReferenceProcessorLoadProducerOptions;
-import testlib.gc.ReferenceProcessorLoadProducerOptions.RefTestType;
-import testlib.gc.TestGCOptions.TestType;
-import testlib.gc.TestGCOptions.HumTestType;;
+import test.gc.MetaSpaceLoadProducerOptions.MSTestType;
+import test.gc.ReferenceProcessorLoadProducerOptions.RefTestType;
+import test.gc.TestGCOptions.HumTestType;
+import test.gc.TestGCOptions.TestType;
+import testlib.TestBase;;
 
 //
 // Test Description
