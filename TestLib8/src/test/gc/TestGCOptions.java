@@ -12,7 +12,7 @@ public class TestGCOptions {
         CMS_ON_CLX209,
         CMS_ON_BDW214,
         G1_ON_BDW214,
-        G1_ON_LU0486,
+        G1_ON_CLX209,
         G1_ON_LU0486_MORE_FULL_GCS,
         PARGC_ON_LU0486,
         PARGC_ON_LU0486_GERRIT,  // low old usage -> shrink with adaptive size policy
@@ -93,8 +93,8 @@ public class TestGCOptions {
         case G1_ON_BDW214:
             initForG1OnBdw214(this);
             break;
-        case G1_ON_LU0486:
-            initForG1OnLu0486(this);
+        case G1_ON_CLX209:
+            initForG1OnClx209(this);
             break;
         case PARGC_ON_LU0486:
             initForParGCOnLu0486(this);
@@ -173,7 +173,7 @@ public class TestGCOptions {
         // use dflt settings
     }
 
-    public static void initForG1OnLu0486(TestGCOptions gcOpts) {
+    public static void initForG1OnClx209(TestGCOptions gcOpts) {
         // use dflt settings
     }
 
