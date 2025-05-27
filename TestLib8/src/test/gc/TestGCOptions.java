@@ -129,7 +129,7 @@ public class TestGCOptions {
     public static void initOptsWithDflts(TestGCOptions gcOpts) {
         gcOpts.trc_level = 3;
         gcOpts.obj_header_size_bytes = 16; // roughly true for 64 bit
-        gcOpts.immortal_obj_heap_occupancy = 0.15f;
+        gcOpts.immortal_obj_heap_occupancy = getProperty("gcOpts.immortal_obj_heap_occupancy", 0.15f);
         gcOpts.immortal_obj_size_bytes = 1*K;
         init_immortal_derived_settings(gcOpts);
         gcOpts.mortal_obj_heap_occupancy = 0.15f;
@@ -170,9 +170,7 @@ public class TestGCOptions {
     }
 
     public static void initForG1OnBdw214(TestGCOptions gcOpts) {
-        gcOpts.immortal_obj_heap_occupancy = getProperty("gcOpts.immortal_obj_heap_occupancy", 0.15f);
-        init_immortal_derived_settings(gcOpts);
-        init_derived_settings_final(gcOpts);
+        // use dflt settings
     }
 
     public static void initForG1OnLu0486(TestGCOptions gcOpts) {
