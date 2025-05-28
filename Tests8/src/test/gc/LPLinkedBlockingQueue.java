@@ -9,6 +9,7 @@ import testlib.Tracing;
 // A pause time between 2 operations in the same thread can be specified.
 public class LPLinkedBlockingQueue implements Tracing, LoadProducer {
 
+    private static final long STATS_INTERVAL_MS = 10000;
     private final int capacity;
     private final int minOcc;
     private final int pauseMs;
@@ -89,7 +90,17 @@ public class LPLinkedBlockingQueue implements Tracing, LoadProducer {
         consumer.start();
 
         // Continuously add more items in queue
+        long lastStatsMillis = System.currentTimeMillis();
+        int opsUntilStatsCheck = 100;
         while (true) {
+            if (opsUntilStatsCheck-- < 0) {
+                opsUntilStatsCheck = 100;
+                long now = System.currentTimeMillis();
+                if ((now - lastStatsMillis) > STATS_INTERVAL_MS) {
+                    lastStatsMillis = now;
+                    printStats();
+                }
+            }
             put(new PayLoad());
             pause();
         }
@@ -114,5 +125,9 @@ public class LPLinkedBlockingQueue implements Tracing, LoadProducer {
     public void runInBackground() {
         producerThread = new Thread(this, "LPLinkedBlockingQueueThread Producer");
         producerThread.start();
+    }
+
+    private void printStats() {
+        log0("Queue size: " + humanReadable(queue.size()));
     }
 }
