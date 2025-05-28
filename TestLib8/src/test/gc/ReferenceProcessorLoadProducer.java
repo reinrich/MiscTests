@@ -111,7 +111,6 @@ public class ReferenceProcessorLoadProducer extends TestBase implements Runnable
         }
     }
     public ReferenceProcessorLoadProducer(ReferenceProcessorLoadProducerOptions opts) {
-        super(opts.trc_level);
         this.opts = opts;
     }
 

@@ -1,6 +1,6 @@
 package test.gc;
 
-import testlib.Tracer;
+import testlib.Tracing;
 
 public class ReferenceProcessorLoadProducerOptions {
 
@@ -50,7 +50,7 @@ public class ReferenceProcessorLoadProducerOptions {
         rpOpts.soft_refs_clearing_batch_size = 100;
     }
 
-    public void printOn(Tracer tracer) {
+    public void printOn(Tracing tracer) {
         tracer.trcInstanceFields(this);
     }
 }

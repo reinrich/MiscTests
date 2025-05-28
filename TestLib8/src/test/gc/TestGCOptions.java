@@ -1,6 +1,6 @@
 package test.gc;
 
-import testlib.Tracer;
+import testlib.Tracing;
 
 public class TestGCOptions {
 
@@ -185,7 +185,7 @@ public class TestGCOptions {
         // use dflt settings
     }
 
-    public void printOn(Tracer tracer) {
+    public void printOn(Tracing tracer) {
         tracer.log("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
         tracer.trcInstanceFields(this);
     }

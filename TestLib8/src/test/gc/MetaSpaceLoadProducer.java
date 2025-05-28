@@ -37,7 +37,6 @@ public class MetaSpaceLoadProducer extends TestBase implements Runnable {
     private Thread backGroundThread;
 
     public MetaSpaceLoadProducer(MetaSpaceLoadProducerOptions opts) {
-        super(opts.trc_level);
         this.opts = opts;
         heap = new JavaHeap(this);
     }
@@ -75,7 +74,7 @@ public class MetaSpaceLoadProducer extends TestBase implements Runnable {
 
     /**
      * Load all types until immortals are full
-     * @throws Exception 
+     * @throws Exception
      */
     private void setUp() throws Exception {
         immortals = new NestedArrayList<>();

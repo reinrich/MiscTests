@@ -35,7 +35,6 @@ public class GCLoadProducer extends TestBase implements Runnable {
     private Runnable objectGraphCompleteCallback;
 
     public GCLoadProducer(TestGCOptions opts, Runnable objectGraphCompleteCallback) {
-        super(opts.trc_level);
         this.opts = opts;
         this.objectGraphCompleteCallback = objectGraphCompleteCallback;
         heap = new JavaHeap(this);

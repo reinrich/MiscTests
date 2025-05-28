@@ -1,12 +1,13 @@
 package test.gc;
 
+
+import static testlib.Constants.*;
 import testlib.TestBase;
-import static testlib.TestBase.*;
 
 public class JavaHeap {
 
     public final static long MAX_JAVA_HEAP_BYTES = Runtime.getRuntime().maxMemory();
-    
+
     private Runtime rt;
     private TestBase test;
 
@@ -47,7 +48,7 @@ public class JavaHeap {
     public boolean occupancyBelow(float limitPercentage) {
         return occupancy() < limitPercentage || liveOccupancy() < limitPercentage;
     }
-    
+
     public String toString() {
         return "heap: " + rt.maxMemory()/M + "MB reserved | " + rt.totalMemory()/M + " MB committed | " + allocatedBytes()/M +
                 " MB allocated | " + rt.freeMemory()/M + " MB committed free | "

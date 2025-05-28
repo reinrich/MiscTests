@@ -2,9 +2,9 @@ package test.gc;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-import testlib.TestBase;
+import testlib.Tracing;
 
-public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
+public class LPLinkedBlockingQueue implements Tracing, LoadProducer {
 
     private int listLength;
     private int pauseMs;

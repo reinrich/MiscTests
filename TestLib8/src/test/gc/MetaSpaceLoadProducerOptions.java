@@ -1,6 +1,6 @@
 package test.gc;
 
-import testlib.Tracer;
+import testlib.Tracing;
 
 public class MetaSpaceLoadProducerOptions {
     
@@ -128,7 +128,7 @@ public class MetaSpaceLoadProducerOptions {
         gcOpts.class_allocation_rate_per_ms = 10;
     }
 
-    public void printOn(Tracer tracer) {
+    public void printOn(Tracing tracer) {
         tracer.trcInstanceFields(this);
     }
 }

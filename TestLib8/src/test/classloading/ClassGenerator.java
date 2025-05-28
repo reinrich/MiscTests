@@ -5,7 +5,7 @@ import jdk.internal.org.objectweb.asm.MethodVisitor;
 import jdk.internal.org.objectweb.asm.commons.GeneratorAdapter;
 import jdk.internal.org.objectweb.asm.commons.Method;
 import testlib.TestBase;
-import testlib.Tracer;
+import testlib.Tracing;
 
 import static
        jdk.internal.org.objectweb.asm.Opcodes.*;
@@ -17,7 +17,7 @@ public class ClassGenerator {
 
     private String pkgName;
     private String slashedPkgName;
-    private Tracer tracer;
+    private Tracing tracer;
 
     public static void main(String[] args) {
         try {
@@ -30,7 +30,7 @@ public class ClassGenerator {
         }
     }
 
-    public ClassGenerator(String pkgName, Tracer tracer) {
+    public ClassGenerator(String pkgName, Tracing tracer) {
         this.pkgName = pkgName;
         this.slashedPkgName = pkgName.replace('.', '/');
         this.tracer = tracer;
