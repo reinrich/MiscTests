@@ -17,7 +17,7 @@ public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
 
     // argString: <length>:<alloc pause ms>
     public LPLinkedBlockingQueue(String argString) {
-        log("###### setup " + getClass().getName());
+        log0("setup " + getClass().getName());
         try {
             String[] aArgs = argString.split(":");
             String lenStr = aArgs[0];
@@ -49,7 +49,7 @@ public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
     public class Consumer implements Runnable {
         @Override
         public void run() {
-            log("###### Started Consumer");
+            log0("Started Consumer");
             LinkedBlockingQueue<PayLoad> q = queue;
             while (true) {
                 q.poll();
@@ -64,7 +64,7 @@ public class LPLinkedBlockingQueue extends TestBase implements LoadProducer {
 
     @Override
     public void run() {
-        log("###### Started Producer");
+        log0("Started Producer");
         queue = new LinkedBlockingQueue<PayLoad>();
 
         // Fill queue

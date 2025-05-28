@@ -57,11 +57,14 @@ public abstract class TestBase implements Tracer {
         indentation -= 2;
     }
 
+    public void log0(Object msg) {
+        log(0, "###### " + Thread.currentThread() + " " + msg);
+    }
     public void log() {
-        log(0, "");
+        log(1, "");
     }
     public void log(Object msg) {
-        log(0, msg);
+        log(1, msg);
     }
 
     public void log(int level, Object msg) {

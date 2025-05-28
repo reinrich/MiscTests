@@ -66,7 +66,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
         humObjs = new NestedArrayList<>();
         long moIdx = 0;
 
-        log("###### Build-up of object graph");
+        log0("Build-up of object graph");
         logIncInd();
         log(heap);
         while(immortalObjs.size() < opts.immortal_obj_count || mortalObjs.size() < opts.mortal_obj_count || humObjs.size() < opts.hum_obj_count) {
@@ -101,7 +101,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
         log(heap);
         logDecInd();
         log();
-        log("###### Running objectGraphCompleteCallback");
+        log0("Running objectGraphCompleteCallback");
         objectGraphCompleteCallback.run();
     }
 
@@ -109,7 +109,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
         long moIdx = 0;
         long humIdx = 0;
 
-        log("###### Continously allocating objects");
+        log0("Continously allocating objects");
         logIncInd();
         log(heap);
 
