@@ -37,4 +37,11 @@ public interface Tracing {
     public default void trcInstanceFields(Object obj) {
         getBackend().trcInstanceFields(obj);
     }
+
+    public default String humanReadable(int val) {
+        if (Math.abs(val) < 1000) {
+            return String.valueOf(val);
+        }
+        return String.valueOf(val / 1000) + "k";
+    }
 }
