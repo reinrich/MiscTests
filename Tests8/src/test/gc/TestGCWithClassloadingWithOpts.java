@@ -39,12 +39,16 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
         }
 
         // Read test types
-        TestType tt = TestType.valueOf(args[0]);
+        TestType tt = TestType.DEFAULT;
         MSTestType mstt   = MSTestType.MS_NONE;
         HumTestType humtt = HumTestType.HUM_NONE;
         RefTestType reftt = RefTestType.REF_NONE;
 
-        for (int i = 1; i < args.length; i++) {
+        for (int i = 0; i < args.length; i++) {
+            try {
+                tt = TestType.valueOf(args[i]);
+                continue;
+            } catch (IllegalArgumentException e) { /* ignored */}
             try {
                 mstt = MSTestType.valueOf(args[i]);
                 continue;

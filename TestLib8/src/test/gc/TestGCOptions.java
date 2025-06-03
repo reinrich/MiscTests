@@ -9,6 +9,7 @@ public class TestGCOptions {
 
     public enum TestType {
         NONE,
+        DEFAULT,
         CMS_ON_CLX209,
         CMS_ON_BDW214,
         G1_ON_BDW214,
@@ -108,6 +109,8 @@ public class TestGCOptions {
             break;
         case G1_ON_LU0486_MORE_FULL_GCS:
             initForG1OnLu0486MoreFullGCs(this);
+            break;
+        case DEFAULT:
             break;
         default:
             throw new Error("unknown test type " + tt);
