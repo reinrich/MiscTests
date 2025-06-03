@@ -20,7 +20,19 @@ public class LPLinkedBlockingQueue implements Tracing, LoadProducer {
         public long l;
     }
 
+    public LPLinkedBlockingQueue() {
+        String usage = "Usage: " + getClass().getName() + " <capacity, e.g. 4m>[,<pause ms, 0 dflt>[,<min. occupancy %, e.g. 90>]]";
+        System.err.println();
+        System.err.println(usage);
+        System.err.println();
+        System.err.println("Example: " + getClass().getName() + " 4m,10,90");
+        System.err.println();
+        System.err.println();
+        throw new Error(usage);
+    }
+
     public LPLinkedBlockingQueue(String capacity, String pauseMs, String minOccPerc) {
+        log();
         log0("setup " + getClass().getName());
         try {
             int capaStrLen = capacity.length();
@@ -40,10 +52,11 @@ public class LPLinkedBlockingQueue implements Tracing, LoadProducer {
             throw new Error(e);
         }
         logIncInd();
-        log(humanReadable(this.capacity) + " elements capacity");
-        log(humanReadable(this.minOcc) + " elements min. occupancy");
-        log(pauseMs + " ms pause per iteration");
+        log(humanReadable(this.capacity) + " elements capacity (producer blocks when reached)");
+        log(humanReadable(this.minOcc) + " elements min. occupancy (consumer blocks when reached)");
+        log(pauseMs + " ms pause per operation");
         logDecInd();
+        log();
     }
 
     // argString: <capacity>,<min. occu. perc.>,<alloc pause ms>

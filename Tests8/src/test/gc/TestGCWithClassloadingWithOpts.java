@@ -104,8 +104,13 @@ public class TestGCWithClassloadingWithOpts extends TestBase {
         do {
             try {
                 Class<?> clazz = Class.forName(className);
-                Constructor<?> constructor = clazz.getConstructor(String.class);
-                loadProducer = (LoadProducer) constructor.newInstance(args);
+                if (args != null) {
+                    Constructor<?> constructor = clazz.getConstructor(String.class);
+                    loadProducer = (LoadProducer) constructor.newInstance(args);
+                } else {
+                    Constructor<?> constructor = clazz.getConstructor();
+                    loadProducer = (LoadProducer) constructor.newInstance();
+                }
             } catch (Throwable t) {
                 if (retried) {
                     throw new Error (t);
