@@ -4,6 +4,8 @@ import testlib.Tracing;
 
 public class TestGCOptions {
 
+    static final boolean STRESS_FINALIZATION = Boolean.valueOf(System.getProperty("opts.STRESS_FINALIZATION", "false"));
+
     public static final int K = 1<<10;
     public static final int M = 1<<20;
 
@@ -198,6 +200,7 @@ public class TestGCOptions {
 
     public void printOn(Tracing tracer) {
         tracer.log("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
+        tracer.log("TestGCOptions.STRESS_FINALIZATION: " + STRESS_FINALIZATION);
         tracer.trcInstanceFields(this);
     }
 

@@ -154,7 +154,11 @@ public class GCLoadProducer extends TestBase implements Runnable {
     }
 
     private ImmortalObject allocImmortalObject() {
-        return new ImmortalObject(new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes]);
+        if (TestGCOptions.STRESS_FINALIZATION) {
+            return new ImmortalObjectWithFinalizer(new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes]);
+        } else {
+            return new ImmortalObject(new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes]);
+        }
     }
 
     private byte[] allocHumongousObject() {
@@ -162,7 +166,10 @@ public class GCLoadProducer extends TestBase implements Runnable {
     }
 
     private MortalObject allocMortalObject() {
-        MortalObject result = new MortalObject(new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes]);
+        MortalObject result =
+            TestGCOptions.STRESS_FINALIZATION ?
+            new MortalObjectWithFinalizer(new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes]) :
+            new MortalObject(new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes]);
         result.hashCode();
         return result;
     }
