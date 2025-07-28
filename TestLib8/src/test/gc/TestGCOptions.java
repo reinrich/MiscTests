@@ -12,6 +12,7 @@ public class TestGCOptions {
         DEFAULT,
         CMS_ON_CLX209,
         CMS_ON_BDW214,
+        CMS_ON_LS3851,
         G1_ON_BDW214,
         G1_ON_CLX209,
         G1_ON_LS3851,
@@ -92,6 +93,9 @@ public class TestGCOptions {
         case CMS_ON_BDW214:
             initForCmsOn_bdw214(this);
             break;
+        case CMS_ON_LS3851:
+            initForCmsOn_ls3851(this);
+            break;
         case G1_ON_BDW214:
             initForG1OnBdw214(this);
             break;
@@ -152,6 +156,10 @@ public class TestGCOptions {
     }
 
     public static void initForCmsOn_bdw214(TestGCOptions gcOpts) {
+        // use dflt settings
+    }
+
+    public static void initForCmsOn_ls3851(TestGCOptions gcOpts) {
         // use dflt settings
     }
 
