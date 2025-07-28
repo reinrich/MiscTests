@@ -19,8 +19,8 @@ import testlib.TestBase;
 public class GCLoadProducer extends TestBase implements Runnable {
 
     private static final int CHECK_HUM_INTERVAL = 3000; // allocations
-    private NestedArrayList<byte[]> immortalObjs;
-    private NestedArrayList<byte[]> mortalObjs;
+    private NestedArrayList<ImmortalObject> immortalObjs;
+    private NestedArrayList<MortalObject> mortalObjs;
     private NestedArrayList<byte[]> humObjs;
 
     private JavaHeap heap;
@@ -144,7 +144,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 if (shortToAlloc > 0) {
                     shortToAlloc--;
                     @SuppressWarnings("unused")
-                    byte[] tmp = allocMortalObject(); // allocated and instantly dropped
+                    MortalObject tmp = allocMortalObject(); // allocated and instantly dropped
                 }
             }
         }
@@ -153,16 +153,16 @@ public class GCLoadProducer extends TestBase implements Runnable {
         log();
     }
 
-    private byte[] allocImmortalObject() {
-        return new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes];
+    private ImmortalObject allocImmortalObject() {
+        return new ImmortalObject(new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes]);
     }
 
     private byte[] allocHumongousObject() {
         return new byte[opts.hum_obj_size_bytes-opts.obj_header_size_bytes];
     }
 
-    private byte[] allocMortalObject() {
-        byte[] result = new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes];
+    private MortalObject allocMortalObject() {
+        MortalObject result = new MortalObject(new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes]);
         result.hashCode();
         return result;
     }
