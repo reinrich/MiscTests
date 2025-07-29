@@ -4,8 +4,6 @@ import testlib.Tracing;
 
 public class TestGCOptions {
 
-    static final boolean STRESS_FINALIZATION = Boolean.valueOf(System.getProperty("opts.STRESS_FINALIZATION", "false"));
-
     public static final int K = 1<<10;
     public static final int M = 1<<20;
 
@@ -50,8 +48,11 @@ public class TestGCOptions {
     public long  hum_obj_count;
 
     public int alloc_percentage_immortal;
+    public int alloc_percentage_immortal_with_finalizer; // percentage of immortal objects that should have a finalize method
     public int alloc_percentage_mortal;
+    public int alloc_percentage_mortal_with_finalizer; // percentage of mortal objects that should have a finalize method
     public int alloc_percentage_short_lived;
+    public int alloc_percentage_short_lived_with_finalizer; // percentage of short lived mortal objects that should have a finalize method
 
     public int alloc_interval_humongous; // ordinary allocations until new humongous allocation
 
@@ -148,9 +149,33 @@ public class TestGCOptions {
         gcOpts.mortal_obj_heap_occupancy = 0.15f;
         gcOpts.mortal_obj_size_bytes = 256;
         init_mortal_derived_settings(gcOpts);
-        gcOpts.alloc_percentage_immortal = (int)getProperty("gcOpts.alloc_percentage_immortal", 20);
-        gcOpts.alloc_percentage_mortal   = (int)getProperty("gcOpts.alloc_percentage_mortal",   10);;
+        gcOpts.alloc_percentage_immortal                = (int)getProperty("gcOpts.alloc_percentage_immortal", 20);
+        gcOpts.alloc_percentage_mortal                  = (int)getProperty("gcOpts.alloc_percentage_mortal",   10);;
+        initOptsFinalization(gcOpts);
         init_derived_settings_final(gcOpts);
+    }
+
+    // E.g. -DgcOpts.alloc_percentage_with_finalizer=I20,M20,S20
+    public static void initOptsFinalization(TestGCOptions gcOpts) {
+        String propValue = System.getProperty("gcOpts.alloc_percentage_with_finalizer");
+        if (propValue == null) return;
+        String[] percentages = propValue.split(",");
+        for (String pStr : percentages) {
+            int p = Integer.parseInt(pStr.substring(1));
+            switch (pStr.charAt(0)) {
+            case 'I':
+                gcOpts.alloc_percentage_immortal_with_finalizer = p;
+                break;
+            case 'M':
+                gcOpts.alloc_percentage_mortal_with_finalizer = p;
+                break;
+            case 'S':
+                gcOpts.alloc_percentage_short_lived_with_finalizer = p;
+                break;
+            default:
+                throw new Error("Failed to parse finalizer alloc percentages. Example: I5,M10,S5");
+            }
+        }
     }
 
     public static void initForCmsOn_clx209(TestGCOptions gcOpts) {
@@ -200,7 +225,6 @@ public class TestGCOptions {
 
     public void printOn(Tracing tracer) {
         tracer.log("JavaHeap.MAX_JAVA_HEAP_bytes: " + JavaHeap.MAX_JAVA_HEAP_BYTES);
-        tracer.log("TestGCOptions.STRESS_FINALIZATION: " + STRESS_FINALIZATION);
         tracer.trcInstanceFields(this);
     }
 

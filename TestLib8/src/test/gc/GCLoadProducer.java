@@ -91,7 +91,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 }
                 if (shortToAlloc > 0) {
                     shortToAlloc--;
-                    allocImmortalObject(); // allocated and instantly dropped
+                    allocMortalShortObject(); // allocated and instantly dropped
                 }
             }
         }
@@ -144,7 +144,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 if (shortToAlloc > 0) {
                     shortToAlloc--;
                     @SuppressWarnings("unused")
-                    MortalObject tmp = allocMortalObject(); // allocated and instantly dropped
+                    MortalObject tmp = allocMortalShortObject(); // allocated and instantly dropped
                 }
             }
         }
@@ -153,25 +153,82 @@ public class GCLoadProducer extends TestBase implements Runnable {
         log();
     }
 
+    int curImmoCount;
+    int curImmoWithFinalizerCount;
     private ImmortalObject allocImmortalObject() {
-        if (TestGCOptions.STRESS_FINALIZATION) {
-            return new ImmortalObjectWithFinalizer(new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes]);
-        } else {
-            return new ImmortalObject(new byte[opts.immortal_obj_size_bytes-opts.obj_header_size_bytes]);
+        ImmortalObject result = null;
+        int c1 = curImmoCount;
+        int c2 = curImmoWithFinalizerCount;
+        if ((c1 + c2) == 0) {
+            c2 = curImmoWithFinalizerCount = opts.alloc_percentage_immortal_with_finalizer;
+            c1 = curImmoCount = 100 - c2;
         }
+        int byteSize = opts.immortal_obj_size_bytes-opts.obj_header_size_bytes;
+        if (c1 > 0 && ((c1 & 1) == 0 || c2 == 0)) {
+            curImmoCount = c1 - 1;
+            result = new ImmortalObject(new byte[byteSize]);
+        } else if (c2 > 0) {
+            curImmoWithFinalizerCount = c2 - 1;
+            result = new ImmortalObjectWithFinalizer(new byte[byteSize]);
+        } else {
+            throwNegativeCountError(c1, c2);
+        }
+        return result;
     }
 
     private byte[] allocHumongousObject() {
         return new byte[opts.hum_obj_size_bytes-opts.obj_header_size_bytes];
     }
 
+    int curMoCount;
+    int curMoWithFinalizerCount;
     private MortalObject allocMortalObject() {
-        MortalObject result =
-            TestGCOptions.STRESS_FINALIZATION ?
-            new MortalObjectWithFinalizer(new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes]) :
-            new MortalObject(new byte[opts.mortal_obj_size_bytes-opts.obj_header_size_bytes]);
+        MortalObject result = null;
+        int c1 = curMoCount;
+        int c2 = curMoWithFinalizerCount;
+        if ((c1 + c2) == 0) {
+            c2 = curMoWithFinalizerCount = opts.alloc_percentage_mortal_with_finalizer;
+            c1 = curMoCount = 100 - c2;
+        }
+        int byteSize = opts.mortal_obj_size_bytes-opts.obj_header_size_bytes;
+        if (c1 > 0 && ((c1 & 1) == 0 || c2 == 0)) {
+            curMoCount = c1 - 1;
+            result = new MortalObject(new byte[byteSize]);
+        } else if (c2 > 0) {
+            curMoWithFinalizerCount = c2 - 1;
+            result = new MortalObjectWithFinalizer(new byte[byteSize]);
+        } else {
+            throwNegativeCountError(c1, c2);
+        }
         result.hashCode();
         return result;
+    }
+
+    int curMoShortCount;
+    int curMoShortWithFinalizerCount;
+    private MortalObject allocMortalShortObject() {
+        MortalObject result = null;
+        int c1 = curMoShortCount;
+        int c2 = curMoShortWithFinalizerCount;
+        if ((c1 + c2) == 0) {
+            c2 = curMoShortWithFinalizerCount = opts.alloc_percentage_short_lived_with_finalizer;
+            c1 = curMoShortCount = 100 - c2;
+        }
+        int byteSize = opts.mortal_obj_size_bytes-opts.obj_header_size_bytes;
+        if (c1 > 0 && ((c1 & 1) == 0 || c2 == 0)) {
+            curMoShortCount = c1 - 1;
+            result = new MortalObject(new byte[byteSize]);
+        } else if (c2 > 0) {
+            curMoShortWithFinalizerCount = c2 - 1;
+            result = new MortalObjectWithFinalizer(new byte[byteSize]);
+        } else {
+            throwNegativeCountError(c1, c2);
+        }
+        return result;
+    }
+
+    private void throwNegativeCountError(int c1, int c2) {
+        throw new Error("Negative count: c1 = " + c1 + "  c2 = " + c2);
     }
 
     public synchronized void waitUntilReady2go() {
