@@ -91,7 +91,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 }
                 if (shortToAlloc > 0) {
                     shortToAlloc--;
-                    allocMortalShortObject(); // allocated and instantly dropped
+                    allocImmortalObject(); // allocated and instantly dropped
                 }
             }
         }
