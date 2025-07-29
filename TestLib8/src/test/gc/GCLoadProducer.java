@@ -224,6 +224,7 @@ public class GCLoadProducer extends TestBase implements Runnable {
         } else {
             throwNegativeCountError(c1, c2);
         }
+        result.hashCode();
         return result;
     }
 
