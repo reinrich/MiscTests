@@ -27,11 +27,15 @@ import testlib.TestBase;
 @SuppressWarnings("restriction")
 public class GCLoadProducer extends TestBase implements Runnable {
 
+    private static GCLoadProducer INSTANCE;
+
     private static final int CHECK_HUM_INTERVAL = 3000; // allocations
     private NestedArrayList<ImmortalObject> immortalObjs;
     private NestedArrayList<MortalObject> mortalObjs;
-    private NestedArrayList<MortalObject> shortLived;   // survive a few young gcs but get never promoted to old
     private NestedArrayList<byte[]> humObjs;
+
+    private NestedArrayList<MortalObject>[] shortLived;   // survive a few young gcs but get never promoted to old
+    private int shortLivedIdx;
 
     private JavaHeap heap;
 
@@ -48,6 +52,12 @@ public class GCLoadProducer extends TestBase implements Runnable {
         this.opts = opts;
         this.objectGraphCompleteCallback = objectGraphCompleteCallback;
         heap = new JavaHeap(this);
+        immortalObjs = new NestedArrayList<>();
+        mortalObjs = new NestedArrayList<>();
+        humObjs = new NestedArrayList<>();
+        shortLived = new NestedArrayList[opts.short_lived_max_young_gcs];
+        shortLived[shortLivedIdx] = new NestedArrayList<>();
+        INSTANCE = this;
     }
 
     @Override
@@ -74,6 +84,11 @@ public class GCLoadProducer extends TestBase implements Runnable {
                         if (!isYoungGC(info.getGcName())) {
                             log0(String.format("GC: %-20s | Cause: %-20s | Duration: %4d ms%n",
                                     info.getGcName(), info.getGcCause(), info.getGcInfo().getDuration()));
+                        } else {
+                            synchronized(INSTANCE) {
+                                if (++shortLivedIdx == shortLived.length) shortLivedIdx = 0;
+                                shortLived[shortLivedIdx] = new NestedArrayList<>();
+                            }
                         }
                     }
                 }, null, null);
@@ -85,8 +100,10 @@ public class GCLoadProducer extends TestBase implements Runnable {
         switch (gcName) {
         case "ParNew":
             return true;
-        default:
+        case "ConcurrentMarkSweep":
             return false;
+        default:
+            throw new Error("Unknown GC: " + gcName);
         }
     }
 
@@ -100,20 +117,24 @@ public class GCLoadProducer extends TestBase implements Runnable {
     }
 
     private void buildUpObjectGraph() {
-        immortalObjs = new NestedArrayList<>();
-        mortalObjs = new NestedArrayList<>();
-        humObjs = new NestedArrayList<>();
         long moIdx = 0;
 
         log0("Build-up of object graph");
         logIncInd();
         log(heap);
+        int shortAllocCount = 0;
         while(immortalObjs.size() < opts.immortal_obj_count || mortalObjs.size() < opts.mortal_obj_count || humObjs.size() < opts.hum_obj_count) {
             // allocate 100 objects according to the ALLOC_PERCENTAGES
             int immoToAlloc = immortalObjs.size() >= opts.immortal_obj_count ? 0 : opts.alloc_percentage_immortal;
             int humToAlloc = humObjs.size() >= opts.hum_obj_count ? 0 : 1;
             int moToAlloc = opts.alloc_percentage_mortal;
             int shortToAlloc = opts.alloc_percentage_short_lived;
+
+            NestedArrayList<MortalObject> newShortLived;
+
+            synchronized(INSTANCE) {
+                newShortLived = shortLived[shortLivedIdx];
+            }
 
             while(moToAlloc+immoToAlloc+shortToAlloc > 0) {
                 if (immoToAlloc > 0) {
@@ -131,7 +152,11 @@ public class GCLoadProducer extends TestBase implements Runnable {
                 }
                 if (shortToAlloc > 0) {
                     shortToAlloc--;
-                    allocMortalShortObject(); // allocated and instantly dropped
+                    MortalObject s = allocMortalShortObject(); // allocated and instantly dropped
+                    if (++shortAllocCount > opts.death_in_eden_percentage) {
+                        if (shortAllocCount >= 100) shortAllocCount = 0;
+                        newShortLived.add(s);
+                    }
                 }
             }
         }

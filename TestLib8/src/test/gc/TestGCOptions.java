@@ -55,6 +55,9 @@ public class TestGCOptions {
     public int alloc_percentage_short_lived;
     public int alloc_percentage_short_lived_with_finalizer; // percentage of short lived mortal objects that should have a finalize method
 
+    public int death_in_eden_percentage;
+    public int short_lived_max_young_gcs;
+
     public int alloc_interval_humongous; // ordinary allocations until new humongous allocation
 
     // wait iterations after iterating 100 objects
@@ -153,8 +156,10 @@ public class TestGCOptions {
         gcOpts.mortal_obj_size_bytes = 256;
         init_mortal_derived_settings(gcOpts);
         gcOpts.alloc_percentage_immortal                = (int)getProperty("gcOpts.alloc_percentage_immortal", 20);
-        gcOpts.alloc_percentage_mortal                  = (int)getProperty("gcOpts.alloc_percentage_mortal",   10);;
+        gcOpts.alloc_percentage_mortal                  = (int)getProperty("gcOpts.alloc_percentage_mortal",   10);
         initOptsFinalization(gcOpts);
+        gcOpts.death_in_eden_percentage                 = (int)getProperty("gcOpts.death_in_eden_percentage",  80);
+        gcOpts.short_lived_max_young_gcs                = (int)getProperty("gcOpts.short_lived_max_young_gcs",  7);
         init_derived_settings_final(gcOpts);
     }
 
