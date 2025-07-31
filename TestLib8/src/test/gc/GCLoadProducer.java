@@ -2,6 +2,14 @@ package test.gc;
 
 import testlib.tools.NestedArrayList;
 
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
+
+import javax.management.NotificationEmitter;
+import javax.management.openmbean.CompositeData;
+
+import com.sun.management.GarbageCollectionNotificationInfo;
+
 import testlib.TestBase;
 
 //
@@ -16,11 +24,13 @@ import testlib.TestBase;
 //     Short lived objects: are allocated without keeping the reference.
 //
 
+@SuppressWarnings("restriction")
 public class GCLoadProducer extends TestBase implements Runnable {
 
     private static final int CHECK_HUM_INTERVAL = 3000; // allocations
     private NestedArrayList<ImmortalObject> immortalObjs;
     private NestedArrayList<MortalObject> mortalObjs;
+    private NestedArrayList<MortalObject> shortLived;   // survive a few young gcs but get never promoted to old
     private NestedArrayList<byte[]> humObjs;
 
     private JavaHeap heap;
@@ -45,9 +55,39 @@ public class GCLoadProducer extends TestBase implements Runnable {
         log("Running with the following options: ");
         opts.printOn(this);
         shouldContinueToAllocate = true;
+        registerGCListener();
         buildUpObjectGraph();
         signalReady2Go();
         continouslyAllocateObjects();
+    }
+
+    private void registerGCListener() {
+        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            if (gcBean instanceof NotificationEmitter) {
+                NotificationEmitter emitter = (NotificationEmitter) gcBean;
+
+                emitter.addNotificationListener((notification, handback) -> {
+                    if (notification.getType().equals(GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)) {
+                        CompositeData cd = (CompositeData) notification.getUserData();
+                        GarbageCollectionNotificationInfo info = GarbageCollectionNotificationInfo.from(cd);
+
+                        if (!isYoungGC(info.getGcName())) {
+                            log0(String.format("GC: %-20s | Cause: %-20s | Duration: %4d ms%n",
+                                    info.getGcName(), info.getGcCause(), info.getGcInfo().getDuration()));
+                        }
+                    }
+                }, null, null);
+            }
+        }
+    }
+
+    private boolean isYoungGC(String gcName) {
+        switch (gcName) {
+        case "ParNew":
+            return true;
+        default:
+            return false;
+        }
     }
 
     public void runInBackground() {
