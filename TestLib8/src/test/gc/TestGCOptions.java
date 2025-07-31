@@ -13,6 +13,7 @@ public class TestGCOptions {
         CMS_ON_CLX209,
         CMS_ON_BDW214,
         CMS_ON_LS3851,
+        CMS_ON_LS3851_FINANLIZATION,
         G1_ON_BDW214,
         G1_ON_CLX209,
         G1_ON_LS3851,
@@ -98,6 +99,8 @@ public class TestGCOptions {
             break;
         case CMS_ON_LS3851:
             initForCmsOn_ls3851(this);
+        case CMS_ON_LS3851_FINANLIZATION:
+            initForCmsWithFinalizationOn_ls3851(this);
             break;
         case G1_ON_BDW214:
             initForG1OnBdw214(this);
@@ -188,6 +191,15 @@ public class TestGCOptions {
 
     public static void initForCmsOn_ls3851(TestGCOptions gcOpts) {
         // use dflt settings
+    }
+
+    public static void initForCmsWithFinalizationOn_ls3851(TestGCOptions gcOpts) {
+        initOptsFinalization(gcOpts);
+        gcOpts.immortal_obj_size_bytes = 512;
+        init_immortal_derived_settings(gcOpts);
+        init_mortal_derived_settings(gcOpts);
+        initOptsFinalization(gcOpts);
+        init_derived_settings_final(gcOpts);
     }
 
     public static void initForParGCOnLu0486(TestGCOptions gcOpts) {
