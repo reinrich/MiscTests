@@ -11,6 +11,8 @@ import java.net.URL;
  */
 public class DirectClassLoader extends ClassLoader {
 
+    private static final boolean DEBUG = Boolean.getBoolean("DBG");
+
     public Class<?> findClass(String className) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(className)) {
             // First, check if the class has already been loaded
@@ -35,7 +37,8 @@ public class DirectClassLoader extends ClassLoader {
                     c = defineClass(className, b, 0, b.length);
                     System.out.println(this + " defined class " + className);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    if (DEBUG)
+                        e.printStackTrace();
                     throw new ClassNotFoundException("Could not define directly '" + className + "'");
                 }
             }
