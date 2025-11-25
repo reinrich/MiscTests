@@ -14,6 +14,8 @@ public class JCoReloadTest implements Runnable {
             OUT.println("### 1st load of JCo:");
             staticRunTest();
             doGCs();
+            OUT.println("Trigger heap dump now if you want to inspect loaded classes.");
+            Thread.sleep(100000);
             OUT.println("### 2nd load of JCo:");
             staticRunTest();
             doGCs();
@@ -29,10 +31,10 @@ public class JCoReloadTest implements Runnable {
     }
 
     private static void staticRunTest() throws Throwable {
-        Class cls = JCoReloadTest.class;
-        String canaryName = cls.getName() + "$Canary";
-        DirectClassLoader ldr = new PredicateClassLoader(cls.getClassLoader(), (name) -> name.startsWith("test.jco"));
-        ldr.newInstance(canaryName);
+//        Class cls = JCoReloadTest.class;
+//        String canaryName = cls.getName() + "$Canary";
+//        DirectClassLoader ldr = new PredicateClassLoader(cls.getClassLoader(), (name) -> name.startsWith("test.jco"));
+//        ldr.newInstance(canaryName);
         Thread.ofPlatform().start(new JCoReloadTest()).join();
     }
 
